@@ -48,7 +48,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RedisLock.cs" />
     <Compile Include="RedisLockFactory.cs" />
-    <Compile Include="RedLockInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
