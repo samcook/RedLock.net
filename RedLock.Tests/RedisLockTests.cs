@@ -90,6 +90,44 @@ namespace RedLock.Tests
 		}
 
 		[Test]
+		public void TestBlockingConcurrentLocks()
+		{
+			using (var redisLockFactory = new RedisLockFactory(AllActiveEndPoints, logger))
+			{
+				var resource = String.Format("testblockingconcurrentlocks-{0}", Guid.NewGuid());
+
+				var threads = new List<Thread>();
+
+				for (var i = 0; i < 2; i++)
+				{
+					var thread = new Thread(() =>
+					{
+						using (var redisLock = redisLockFactory.Create(
+							resource,
+							TimeSpan.FromSeconds(2),
+							TimeSpan.FromSeconds(10),
+							TimeSpan.FromSeconds(0.5)))
+						{
+							logger.InfoWrite("Entering lock");
+							Assert.That(redisLock.IsAcquired, Is.True);
+							Thread.Sleep(4000);
+							logger.InfoWrite("Leaving lock");
+						}
+					});
+
+					thread.Start();
+
+					threads.Add(thread);
+				}
+
+				foreach (var thread in threads)
+				{
+					thread.Join();
+				}
+			}
+		}
+
+		[Test]
 		public void TestSequentialLocks()
 		{
 			using (var redisLockFactory = new RedisLockFactory(AllActiveEndPoints, logger))

@@ -17,8 +17,8 @@ namespace RedLock
 		private readonly IRedLockLogger logger;
 
 		private readonly int quorum;
-		private readonly int retryCount;
-		private readonly int retryDelayMs;
+		private readonly int quorumRetryCount;
+		private readonly int quorumRetryDelayMs;
 		private readonly double clockDriftFactor;
 		private readonly string redisKey;
 		private bool isDisposed;
@@ -34,10 +34,10 @@ namespace RedLock
 
 		// Set the expiry for the given key if its value matches the supplied value.
 		// Returns 1 on success, 0 on failure setting expiry or key not existing, -1 if the key value didn't match
-		private const string SetExpiryIfMatchingValueScript =
+		private const string ExtendIfMatchingValueScript =
 			@"local currentVal = redis.call('get', KEYS[1])
 			if (currentVal == false) then
-				return 0
+				return redis.call('set', KEYS[1], ARGV[1], 'EX', ARGV[2])
 			elseif (currentVal == ARGV[1]) then
 				return redis.call('expire', KEYS[1], ARGV[2])
 			else
@@ -46,9 +46,11 @@ namespace RedLock
 
 		public readonly string Resource;
 		public readonly string LockId;
-		public readonly TimeSpan ExpiryTime;
 		public bool IsAcquired { get; private set; }
 		public int ExtendCount { get; private set; }
+		private readonly TimeSpan expiryTime;
+		private readonly TimeSpan? waitTime;
+		private readonly TimeSpan? retryTime;
 
 		public Func<string, string> DefaultRedisKeyFormatter
 		{
@@ -59,6 +61,8 @@ namespace RedLock
 			ICollection<ConnectionMultiplexer> redisCaches,
 			string resource,
 			TimeSpan expiryTime,
+			TimeSpan? waitTime = null,
+			TimeSpan? retryTime = null,
 			Func<string, string> redisKeyFormatter = null,
 			IRedLockLogger logger = null)
 		{
@@ -67,29 +71,49 @@ namespace RedLock
 			this.logger = logger ?? new NullLogger();
 
 			quorum = redisCaches.Count() / 2 + 1;
-			retryCount = 3;
-			retryDelayMs = 400;
+			quorumRetryCount = 3;
+			quorumRetryDelayMs = 400;
 			clockDriftFactor = 0.01;
 			redisKey = formatter(resource);
 
 			Resource = resource;
 			LockId = Guid.NewGuid().ToString();
-			ExpiryTime = expiryTime;
+			this.expiryTime = expiryTime;
+			this.waitTime = waitTime;
+			this.retryTime = retryTime;
 
 			Start();
-
-			if (IsAcquired)
-			{
-				// start auto-extend timer
-				StartAutoExtendTimer();
-			}
 		}
 
 		private void Start()
 		{
-			for (var i = 0; i < retryCount; i++)
+			if (waitTime.HasValue && retryTime.HasValue && waitTime.Value.TotalMilliseconds > 0 && retryTime.Value.TotalMilliseconds > 0)
 			{
-				logger.DebugWrite("Lock attempt {0} of {1}: {2}, {3}", i + 1, retryCount, Resource, ExpiryTime);
+				var endTime = DateTime.UtcNow + waitTime.Value;
+
+				while (!IsAcquired && DateTime.UtcNow <= endTime)
+				{
+					IsAcquired = Acquire();
+
+					Thread.Sleep(retryTime.Value);
+				}
+			}
+			else
+			{
+				IsAcquired = Acquire();
+			}
+
+			if (IsAcquired)
+			{
+				StartAutoExtendTimer();
+			}
+		}
+
+		private bool Acquire()
+		{
+			for (var i = 0; i < quorumRetryCount; i++)
+			{
+				logger.DebugWrite("Lock attempt {0} of {1}: {2}, {3}", i + 1, quorumRetryCount, Resource, expiryTime);
 
 				var startTick = DateTime.UtcNow.Ticks;
 
@@ -101,18 +125,16 @@ namespace RedLock
 
 				if (locksAcquired >= quorum && validityTicks > 0)
 				{
-					IsAcquired = true;
-				
-					return;
+					return true;
 				}
 				
 				// we failed to get enough locks for a quorum, unlock everything and try again
 				Unlock();
 
 				// only sleep if we have more retries left
-				if (i < retryCount - 1)
+				if (i < quorumRetryCount - 1)
 				{
-					var sleepMs = Rand.Next(retryDelayMs);
+					var sleepMs = Rand.Next(quorumRetryDelayMs);
 
 					logger.DebugWrite("Sleeping {0}ms", sleepMs);
 
@@ -122,6 +144,8 @@ namespace RedLock
 
 			// give up
 			logger.DebugWrite("Could not get lock for id {0}, giving up", LockId);
+
+			return false;
 		}
 
 		private void StartAutoExtendTimer()
@@ -174,16 +198,16 @@ namespace RedLock
 					}
 				},
 				null,
-				(long) ExpiryTime.TotalMilliseconds/2,
-				(long) ExpiryTime.TotalMilliseconds/2);
+				(long) expiryTime.TotalMilliseconds/2,
+				(long) expiryTime.TotalMilliseconds/2);
 		}
 
 		private long GetRemainingValidityTicks(long startTick)
 		{
 			// Add 2 milliseconds to the drift to account for Redis expires precision,
 			// which is 1 milliescond, plus 1 millisecond min drift for small TTLs.
-			var driftTicks = ((long) (ExpiryTime.Ticks*clockDriftFactor)) + TimeSpan.FromMilliseconds(2).Ticks;
-			var validityTicks = ExpiryTime.Ticks - ((DateTime.UtcNow.Ticks) - startTick) - driftTicks;
+			var driftTicks = ((long) (expiryTime.Ticks*clockDriftFactor)) + TimeSpan.FromMilliseconds(2).Ticks;
+			var validityTicks = expiryTime.Ticks - ((DateTime.UtcNow.Ticks) - startTick) - driftTicks;
 			return validityTicks;
 		}
 
@@ -235,8 +259,8 @@ namespace RedLock
 
 			try
 			{
-				logger.DebugWrite("LockInstance enter {0}: {1}, {2}, {3}", host, redisKey, LockId, ExpiryTime);
-				result = cache.GetDatabase().StringSet(redisKey, LockId, ExpiryTime, When.NotExists, CommandFlags.DemandMaster);
+				logger.DebugWrite("LockInstance enter {0}: {1}, {2}, {3}", host, redisKey, LockId, expiryTime);
+				result = cache.GetDatabase().StringSet(redisKey, LockId, expiryTime, When.NotExists, CommandFlags.DemandMaster);
 			}
 			catch (Exception ex)
 			{
@@ -256,9 +280,9 @@ namespace RedLock
 
 			try
 			{
-				logger.DebugWrite("ExtendInstance enter {0}: {1}, {2}, {3}", host, redisKey, LockId, ExpiryTime);
+				logger.DebugWrite("ExtendInstance enter {0}: {1}, {2}, {3}", host, redisKey, LockId, expiryTime);
 				var extendResult = (long) cache.GetDatabase()
-					.ScriptEvaluate(SetExpiryIfMatchingValueScript, new RedisKey[] {redisKey}, new RedisValue[] {LockId, (int) ExpiryTime.TotalSeconds}, CommandFlags.DemandMaster);
+					.ScriptEvaluate(ExtendIfMatchingValueScript, new RedisKey[] {redisKey}, new RedisValue[] {LockId, (int) expiryTime.TotalSeconds}, CommandFlags.DemandMaster);
 
 				result = (extendResult == 1);
 			}
