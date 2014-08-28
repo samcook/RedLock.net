@@ -11,5 +11,7 @@ namespace RedLock.Logging
 		void ErrorWrite(string format, params object[] args);
 
 		void ErrorWrite(Exception exception);
+
+		void ErrorWrite(string message, Exception exception);
 	}
 }

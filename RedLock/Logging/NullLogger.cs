@@ -19,5 +19,9 @@ namespace RedLock.Logging
 		public void ErrorWrite(Exception exception)
 		{
 		}
+
+		public void ErrorWrite(string message, Exception exception)
+		{
+		}
 	}
 }

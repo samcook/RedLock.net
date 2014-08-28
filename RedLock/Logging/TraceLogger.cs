@@ -51,6 +51,14 @@ namespace RedLock.Logging
 			}
 		}
 
+		public void ErrorWrite(string message, Exception exception)
+		{
+			if (ErrorEnabled)
+			{
+				SafeTrace(string.Format("ERROR: {0}{1}{2}", message, Environment.NewLine, GetExceptionString(exception)));
+			}
+		}
+
 		private string GetExceptionString(Exception exception)
 		{
 			var result = new StringBuilder();

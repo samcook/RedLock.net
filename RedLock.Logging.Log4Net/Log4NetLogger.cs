@@ -26,5 +26,10 @@ namespace RedLock.Logging.Log4Net
 	    {
 			Log.Error("Exception", exception);
 	    }
+
+	    public void ErrorWrite(string message, Exception exception)
+	    {
+		    Log.Error(message, exception);
+	    }
     }
 }
