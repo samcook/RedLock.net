@@ -28,7 +28,7 @@ namespace RedLock
 			this.logger = logger ?? new NullLogger();
 		}
 
-		private IList<ConnectionMultiplexer> CreateRedisCaches(ICollection<EndPoint> redisEndPoints, bool tryToWarmUpConnections = true)
+		private IList<ConnectionMultiplexer> CreateRedisCaches(ICollection<EndPoint> redisEndPoints)
 		{
 			var caches = new List<ConnectionMultiplexer>(redisEndPoints.Count);
 
@@ -42,28 +42,7 @@ namespace RedLock
 
 				configuration.EndPoints.Add(endPoint);
 
-				var cache = ConnectionMultiplexer.Connect(configuration);
-
-				if (tryToWarmUpConnections)
-				{
-					try
-					{
-						var ping = cache.GetDatabase().Ping();
-
-						logger.DebugWrite("{0} Ping 1 took {1}ms", RedisLock.GetHost(cache), ping.TotalMilliseconds);
-
-						ping = cache.GetDatabase().Ping();
-
-						logger.DebugWrite("{0} Ping 2 took {1}ms", RedisLock.GetHost(cache), ping.TotalMilliseconds);
-					}
-					// ReSharper disable once EmptyGeneralCatchClause
-					catch (Exception)
-					{
-						// ignore this
-					}
-				}
-
-				caches.Add(cache);
+				caches.Add(ConnectionMultiplexer.Connect(configuration));
 			}
 
 			return caches;
