@@ -25,9 +25,7 @@ using (var redisLock = redisLockFactory.Create(resource, TimeSpan.FromSeconds(30
 		// do stuff
 	}
 }
-
 // the lock is automatically released at the end of the using block
-}
 ```
 
 #### On app shutdown:
