@@ -4,13 +4,13 @@ using System.Linq;
 using System.Net;
 using System.Threading;
 using RedLock.Logging;
+using RedLock.Util;
 using StackExchange.Redis;
 
 namespace RedLock
 {
 	public class RedisLock : IDisposable
 	{
-		private static readonly Random Rand = new Random();
 		private readonly object lockObject = new object();
 
 		private readonly ICollection<ConnectionMultiplexer> redisCaches;
@@ -134,7 +134,7 @@ namespace RedLock
 				// only sleep if we have more retries left
 				if (i < quorumRetryCount - 1)
 				{
-					var sleepMs = Rand.Next(quorumRetryDelayMs);
+					var sleepMs = ThreadSafeRandom.Next(quorumRetryDelayMs);
 
 					logger.DebugWrite("Sleeping {0}ms", sleepMs);
 

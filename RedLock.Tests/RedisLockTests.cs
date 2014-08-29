@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using log4net.Config;
 using NUnit.Framework;
 using RedLock.Logging.Log4Net;
+using RedLock.Util;
 
 namespace RedLock.Tests
 {
@@ -221,11 +222,9 @@ namespace RedLock.Tests
 		[Test]
 		public void TestRaceForQuorum()
 		{
-			var r = new Random();
-
 			var locksAcquired = 0;
 
-			var lockKey = String.Format("testredislock-{0}", r.Next(10000));
+			var lockKey = String.Format("testredislock-{0}", ThreadSafeRandom.Next(10000));
 
 			var tasks = new List<Task>();
 
