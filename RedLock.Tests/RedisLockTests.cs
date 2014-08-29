@@ -23,46 +23,49 @@ namespace RedLock.Tests
 			logger = new Log4NetLogger();
 		}
 
+		// make sure redis is running on these
+		private static readonly DnsEndPoint ActiveServer1 = new DnsEndPoint("localhost", 6379);
+		private static readonly DnsEndPoint ActiveServer2 = new DnsEndPoint("localhost", 6380);
+		private static readonly DnsEndPoint ActiveServer3 = new DnsEndPoint("localhost", 6381);
+
+		// make sure redis isn't running on these
+		private static readonly DnsEndPoint InactiveServer1 = new DnsEndPoint("localhost", 63790);
+		private static readonly DnsEndPoint InactiveServer2 = new DnsEndPoint("localhost", 63791);
+		private static readonly DnsEndPoint InactiveServer3 = new DnsEndPoint("localhost", 63791);
+
+
 		private static readonly IEnumerable<EndPoint> AllActiveEndPoints = new[]
 		{
-			// make sure redis is running on these
-			new DnsEndPoint("localhost", 6379),
-			new DnsEndPoint("localhost", 6380),
-			new DnsEndPoint("localhost", 6381)
+			ActiveServer1,
+			ActiveServer2,
+			ActiveServer3
 		};
 
 		private static readonly IEnumerable<EndPoint> AllInactiveEndPoints = new[]
 		{
-			// make sure redis isn't running on these
-			new DnsEndPoint("localhost", 63790), 
-			new DnsEndPoint("localhost", 63791)
+			InactiveServer1,
+			InactiveServer2,
+			InactiveServer3
 		};
 
 		private static readonly IEnumerable<EndPoint> SomeActiveEndPointsWithQuorum = new[]
 		{
-			// make sure redis is running on these
-			new DnsEndPoint("localhost", 6379),
-			new DnsEndPoint("localhost", 6380),
-			new DnsEndPoint("localhost", 6381),
-
-			// make sure redis isn't running on these
-			new DnsEndPoint("localhost", 63790),
-			new DnsEndPoint("localhost", 63791)
+			ActiveServer1,
+			ActiveServer2,
+			ActiveServer3,
+			InactiveServer1,
+			InactiveServer2
 		};
 
 		private static readonly IEnumerable<EndPoint> SomeActiveEndPointsWithNoQuorum = new[]
 		{
-			// make sure redis is running on these
-			new DnsEndPoint("localhost", 6379),
-			new DnsEndPoint("localhost", 6380),
-			new DnsEndPoint("localhost", 6381),
-
-			// make sure redis isn't running on these
-			new DnsEndPoint("localhost", 63790),
-			new DnsEndPoint("localhost", 63791),
-			new DnsEndPoint("localhost", 63792)
+			ActiveServer1,
+			ActiveServer2,
+			ActiveServer3,
+			InactiveServer1,
+			InactiveServer2,
+			InactiveServer3
 		};
-
 
 		[Test]
 		public void TestSingleLock()
