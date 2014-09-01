@@ -8,7 +8,9 @@ Distributed locks are useful for ensuring only one process is using a particular
 
 ## Usage
 
-Construct a `RedisLockFactory` (passing in a set of redis endpoints). You should keep hold of this and reuse it in your application. Each instance of `RedisLockFactory` maintains its own set of connections with Redis. Remember to dispose it when your app shuts down.
+Construct a `RedisLockFactory`, passing in a set of independent Redis endpoints. The Redis endpoints should be independent (i.e. not replicated masters/slaves).
+
+You should keep hold of the `RedisLockFactory` and reuse it in your application. Each instance maintains its own connections with the configured Redis instances. Remember to dispose it when your app shuts down.
 
 With the factory, create a `RedisLock` in a using block, making sure to check that that the lock `IsAcquired` inside the block before performing any actions. A lock is acquired if `RedisLock` can set a lock key in more than half of the redis instances.
 
@@ -16,6 +18,12 @@ Internally `RedisLock` has a timer that automatically tries to keep the redis lo
 
 #### On app init:
 ```csharp
+var endPoints = new[]
+{
+	new DnsEndPoint("redis1", 6379),
+	new DnsEndPoint("redis2", 6379),
+	new DnsEndPoint("redis3", 6379)
+};
 var redisLockFactory = new RedisLockFactory(endPoints);
 ```
 
@@ -42,6 +50,7 @@ var expiry = TimeSpan.FromSeconds(30);
 var wait = TimeSpan.FromSeconds(10);
 var retry = TimeSpan.FromSeconds(1);
 
+// blocks until acquired or 'wait' timeout
 using (var redisLock = redisLockFactory.Create(resource, expiry, wait, retry))
 {
 	// make sure we got the lock
