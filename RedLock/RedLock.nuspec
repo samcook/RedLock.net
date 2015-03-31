@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<package >
+<package>
   <metadata>
     <id>RedLock.net</id>
     <version>$version$</version>
@@ -8,7 +8,7 @@
     <owners>Sam Cook</owners>
     <licenseUrl>https://github.com/samcook/RedLock.net/blob/master/LICENSE</licenseUrl>
     <projectUrl>https://github.com/samcook/RedLock.net</projectUrl>
-    <!-- <iconUrl>http://ICON_URL_HERE_OR_DELETE_THIS_LINE</iconUrl> -->
+    <iconUrl>https://raw.githubusercontent.com/samcook/RedLock.net/master/redlock-icon.png</iconUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>An implementation of the Redlock distributed lock algorithm</description>
     <releaseNotes>1.0.0 - Initial release</releaseNotes>
