@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
-VisualStudioVersion = 12.0.31101.0
+VisualStudioVersion = 12.0.30110.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RedLock", "RedLock\RedLock.csproj", "{C76CF80D-15B7-440B-9AFB-5B450E1C969B}"
 EndProject
@@ -21,6 +21,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{9B5122
 		.nuget\packages.config = .nuget\packages.config
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RedLock_Net40", "RedLock_Net40\RedLock_Net40.csproj", "{0FFA5029-E5AA-48E2-A915-FEAE3924CAB6}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +41,10 @@ Global
 		{ED3D1A8D-1132-4549-94E1-9F6B8432D4D9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{ED3D1A8D-1132-4549-94E1-9F6B8432D4D9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{ED3D1A8D-1132-4549-94E1-9F6B8432D4D9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0FFA5029-E5AA-48E2-A915-FEAE3924CAB6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0FFA5029-E5AA-48E2-A915-FEAE3924CAB6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0FFA5029-E5AA-48E2-A915-FEAE3924CAB6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0FFA5029-E5AA-48E2-A915-FEAE3924CAB6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
