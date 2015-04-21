@@ -2,7 +2,7 @@
 <package>
   <metadata>
     <id>RedLock.net</id>
-    <version>$version$</version>
+    <version>1.1.0</version>
     <title>RedLock.net</title>
     <authors>Sam Cook</authors>
     <owners>Sam Cook</owners>
@@ -11,8 +11,18 @@
     <iconUrl>https://raw.githubusercontent.com/samcook/RedLock.net/master/redlock-icon.png</iconUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>An implementation of the Redlock distributed lock algorithm</description>
-    <releaseNotes>1.0.0 - Initial release</releaseNotes>
+    <releaseNotes>
+1.1.0 - Target .NET 4.0 and 4.5
+1.0.0 - Initial release
+    </releaseNotes>
     <copyright>Copyright 2014 Sam Cook</copyright>
     <tags>RedLock Redis Distributed Lock</tags>
+    <dependencies>
+      <dependency id="StackExchange.Redis" version="1.0.328"/>
+    </dependencies>
   </metadata>
+  <files>
+    <file src="RedLock\bin\Release\RedLock.dll" target="lib\net45" />
+    <file src="RedLock_Net40\bin\Release\RedLock.dll" target="lib\net40" />
+  </files>
 </package>
