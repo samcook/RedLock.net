@@ -96,6 +96,8 @@ namespace RedLock.Tests
 		[Test]
 		public void TestBlockingConcurrentLocks()
 		{
+			var locksAcquired = 0;
+			
 			using (var redisLockFactory = new RedisLockFactory(AllActiveEndPoints, logger))
 			{
 				var resource = String.Format("testblockingconcurrentlocks-{0}", Guid.NewGuid());
@@ -113,7 +115,10 @@ namespace RedLock.Tests
 							TimeSpan.FromSeconds(0.5)))
 						{
 							logger.InfoWrite("Entering lock");
-							Assert.That(redisLock.IsAcquired, Is.True);
+							if (redisLock.IsAcquired)
+							{
+								Interlocked.Increment(ref locksAcquired);
+							}
 							Thread.Sleep(4000);
 							logger.InfoWrite("Leaving lock");
 						}
@@ -129,6 +134,8 @@ namespace RedLock.Tests
 					thread.Join();
 				}
 			}
+
+			Assert.That(locksAcquired, Is.EqualTo(2));
 		}
 
 		[Test]
