@@ -1,4 +1,4 @@
-# RedLock.net
+# RedLock.net [![Build status](https://ci.appveyor.com/api/projects/status/fclfbkdqy905v3xu/branch/master?svg=true)](https://ci.appveyor.com/project/samcook/redlock-net/branch/master)
 
 An implementation of the [Redlock distributed lock algorithm](http://redis.io/topics/distlock) in C#.
 
