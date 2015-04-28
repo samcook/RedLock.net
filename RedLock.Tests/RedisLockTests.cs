@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using log4net.Config;
 using NUnit.Framework;
+using RedLock.Logging;
 using RedLock.Logging.Log4Net;
 using RedLock.Util;
 
@@ -14,7 +15,7 @@ namespace RedLock.Tests
 	[TestFixture]
 	public class RedisLockTests
 	{
-		private Log4NetLogger logger;
+		private IRedLockLogger logger;
 
 		[TestFixtureSetUp]
 		public void TestFixtureSetUp()
@@ -293,6 +294,41 @@ namespace RedLock.Tests
 				using (var redisLock = redisLockFactory.Create(resource, TimeSpan.FromSeconds(30)))
 				{
 					Assert.That(redisLock.IsAcquired, Is.EqualTo(expectedToAcquire));
+				}
+			}
+		}
+
+		[Test]
+		[Ignore]
+		public void TimeLock()
+		{
+			var l = new TraceLogger
+			{
+				DebugEnabled = false,
+				ErrorEnabled = false
+			}; 
+			//var l = logger;
+
+			using (var redisLockFactory = new RedisLockFactory(AllActiveEndPoints, l))
+			{
+				var resource = String.Format("testredislock-{0}", Guid.NewGuid());
+
+				for (var i = 0; i < 10; i++)
+				{
+					var sw = Stopwatch.StartNew();
+
+					using (var redisLock = redisLockFactory.Create(resource, TimeSpan.FromSeconds(30)))
+					{
+						sw.Stop();
+
+						l.InfoWrite("Acquire {0} took {1} ticks, success {2}", i, sw.ElapsedTicks, redisLock.IsAcquired);
+
+						sw.Restart();
+					}
+
+					sw.Stop();
+
+					l.InfoWrite("Release {0} took {1} ticks, success", i, sw.ElapsedTicks);
 				}
 			}
 		}
