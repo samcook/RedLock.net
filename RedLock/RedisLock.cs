@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading;
+using System.Threading.Tasks;
 using RedLock.Logging;
 using RedLock.Util;
 using StackExchange.Redis;
@@ -215,14 +216,14 @@ namespace RedLock
 		{
 			var locksAcquired = 0;
 
-			foreach (var cache in redisCaches)
+			Parallel.ForEach(redisCaches, cache =>
 			{
 				if (LockInstance(cache))
 				{
-					locksAcquired++;
+					Interlocked.Increment(ref locksAcquired);
 				}
-			}
-			
+			});
+
 			return locksAcquired;
 		}
 
@@ -230,23 +231,20 @@ namespace RedLock
 		{
 			var locksExtended = 0;
 
-			foreach (var cache in redisCaches)
+			Parallel.ForEach(redisCaches, cache =>
 			{
 				if (ExtendInstance(cache))
 				{
-					locksExtended++;
+					Interlocked.Increment(ref locksExtended);
 				}
-			}
+			});
 
 			return locksExtended;
 		}
 
 		private void Unlock()
 		{
-			foreach (var cache in redisCaches)
-			{
-				UnlockInstance(cache);
-			}
+			Parallel.ForEach(redisCaches, cache => UnlockInstance(cache));
 
 			IsAcquired = false;
 		}
