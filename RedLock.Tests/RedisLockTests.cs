@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
@@ -35,6 +36,12 @@ namespace RedLock.Tests
 		private static readonly DnsEndPoint InactiveServer2 = new DnsEndPoint("localhost", 63791);
 		private static readonly DnsEndPoint InactiveServer3 = new DnsEndPoint("localhost", 63791);
 
+		// make sure redis is running here with the specified password
+		private static readonly RedisLockEndPoint PasswordedServer = new RedisLockEndPoint
+		{
+			EndPoint = new DnsEndPoint("localhost", 6382),
+			Password = "password"
+		};
 
 		private static readonly IEnumerable<EndPoint> AllActiveEndPoints = new[]
 		{
@@ -285,7 +292,26 @@ namespace RedLock.Tests
 			Assert.That(locksAcquired, Is.EqualTo(1));
 		}
 
-		private void CheckSingleRedisLock(IEnumerable<EndPoint> endPoints, bool expectedToAcquire)
+		[Test]
+		public void TestPasswordConnection()
+		{
+			CheckSingleRedisLock(new[] {PasswordedServer}, true);
+		}
+
+		[Test]
+		[Ignore("Requires a redis server that supports SSL")]
+		public void TestSslConnection()
+		{
+			var endPoint = new RedisLockEndPoint
+			{
+				EndPoint = new DnsEndPoint("localhost", 6383),
+				Ssl = true
+			};
+
+			CheckSingleRedisLock(new[] { endPoint }, true);
+		}
+
+		private void CheckSingleRedisLock(IEnumerable<RedisLockEndPoint> endPoints, bool expectedToAcquire)
 		{
 			using (var redisLockFactory = new RedisLockFactory(endPoints, logger))
 			{
@@ -296,6 +322,11 @@ namespace RedLock.Tests
 					Assert.That(redisLock.IsAcquired, Is.EqualTo(expectedToAcquire));
 				}
 			}
+		}
+		
+		private void CheckSingleRedisLock(IEnumerable<EndPoint> endPoints, bool expectedToAcquire)
+		{
+			CheckSingleRedisLock(endPoints.Select(x => new RedisLockEndPoint{ EndPoint = x}), expectedToAcquire);
 		}
 
 		[Test]

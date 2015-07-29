@@ -7,106 +7,104 @@ using StackExchange.Redis;
 
 namespace RedLock
 {
-    public class RedisLockFactory : IDisposable
-    {
-        private const int ConnectionTimeOut = 100;
-        private readonly IList<ConnectionMultiplexer> redisCaches;
-        private readonly IRedLockLogger logger;
+	public class RedisLockFactory : IDisposable
+	{
+		private const int DefaultConnectionTimeout = 100;
+		private readonly IList<ConnectionMultiplexer> redisCaches;
+		private readonly IRedLockLogger logger;
 
-        public RedisLockFactory(params EndPoint[] redisEndPoints)
-            : this(redisEndPoints, null)
-        {
-        }
+		public RedisLockFactory(params EndPoint[] redisEndPoints)
+			: this(redisEndPoints, null)
+		{
+		}
 
-        public RedisLockFactory(IEnumerable<EndPoint> redisEndPoints)
-            : this(redisEndPoints, null)
-        {
-        }
+		public RedisLockFactory(IEnumerable<EndPoint> redisEndPoints)
+			: this(redisEndPoints, null)
+		{
+		}
 
-        public RedisLockFactory(IEnumerable<EndPoint> redisEndPoints, IRedLockLogger logger)
-        {
-            redisCaches = CreateRedisCaches(redisEndPoints.ToArray());
-            this.logger = logger ?? new NullLogger();
-        }
+		public RedisLockFactory(IEnumerable<EndPoint> redisEndPoints, IRedLockLogger logger)
+		{
+			var endPoints = redisEndPoints.Select(endPoint => new RedisLockEndPoint
+			{
+				EndPoint = endPoint
+			});
 
-        public RedisLockFactory(AzureRedisCacheEndpoint azureRedisEndpoint) : this(azureRedisEndpoint, null) { }
+			redisCaches = CreateRedisCaches(endPoints.ToArray());
+			this.logger = logger ?? new NullLogger();
+		}
 
-        public RedisLockFactory(AzureRedisCacheEndpoint azureRedisEndpoint, IRedLockLogger logger)
-        {
-            redisCaches = new List<ConnectionMultiplexer> { CreateRedisCache(azureRedisEndpoint)};
-            this.logger = logger ?? new NullLogger();
-        }
+		public RedisLockFactory(params RedisLockEndPoint[] redisEndPoints)
+			: this(redisEndPoints, null)
+		{
+		}
 
-        private IList<ConnectionMultiplexer> CreateRedisCaches(ICollection<EndPoint> redisEndPoints)
-        {
-            var caches = new List<ConnectionMultiplexer>(redisEndPoints.Count);
+		public RedisLockFactory(IEnumerable<RedisLockEndPoint> redisEndPoints)
+			: this(redisEndPoints, null)
+		{
+		}
 
-            foreach (var endPoint in redisEndPoints)
-            {
-                var configuration = new ConfigurationOptions
-                {
-                    AbortOnConnectFail = false,
-                    ConnectTimeout = ConnectionTimeOut
-                };
+		public RedisLockFactory(IEnumerable<RedisLockEndPoint> redisEndPoints, IRedLockLogger logger)
+		{
+			redisCaches = CreateRedisCaches(redisEndPoints.ToArray());
+			this.logger = logger ?? new NullLogger();
+		}
 
-                configuration.EndPoints.Add(endPoint);
+		private static IList<ConnectionMultiplexer> CreateRedisCaches(ICollection<RedisLockEndPoint> redisEndPoints)
+		{
+			var caches = new List<ConnectionMultiplexer>(redisEndPoints.Count);
 
-                caches.Add(ConnectionMultiplexer.Connect(configuration));
-            }
+			foreach (var endPoint in redisEndPoints)
+			{
+				var configuration = new ConfigurationOptions
+				{
+					AbortOnConnectFail = false,
+					ConnectTimeout = endPoint.ConnectionTimeout ?? DefaultConnectionTimeout,
+					Ssl = endPoint.Ssl,
+					Password = endPoint.Password
+				};
 
-            return caches;
-        }
+				configuration.EndPoints.Add(endPoint.EndPoint);
 
-        private ConnectionMultiplexer CreateRedisCache(AzureRedisCacheEndpoint azureRedisEndpoint)
-        {
-            var configuration = new ConfigurationOptions
-            {
-                AbortOnConnectFail = false,
-                ConnectTimeout = ConnectionTimeOut,
-                Ssl = azureRedisEndpoint.SSL,
-                Password = azureRedisEndpoint.AccessKey
-            };
+				caches.Add(ConnectionMultiplexer.Connect(configuration));
+			}
 
-            configuration.EndPoints.Add(azureRedisEndpoint.Host, azureRedisEndpoint.SSL ? 6380 : 6379);
+			return caches;
+		}
 
-            var connection = ConnectionMultiplexer.Connect(configuration);
+		/// <summary>
+		/// Gets a RedisLock using the factory's set of redis endpoints. You should check the IsAcquired property before performing actions.
+		/// </summary>
+		/// <param name="resource">The resource string to lock on. Only one RedisLock should be acquired for any given resource at once.</param>
+		/// <param name="expiryTime">How long the lock should be held for.
+		/// RedisLocks will automatically extend if the process that created the RedisLock is still alive and the RedisLock hasn't been disposed.</param>
+		/// <returns>A RedisLock object.</returns>
+		public RedisLock Create(string resource, TimeSpan expiryTime)
+		{
+			return new RedisLock(redisCaches, resource, expiryTime, logger: logger);
+		}
 
-            return connection;
-        }
+		/// <summary>
+		/// Gets a RedisLock using the factory's set of redis endpoints. You should check the IsAcquired property before performing actions.
+		/// Blocks and retries up to the specified time limits.
+		/// </summary>
+		/// <param name="resource">The resource string to lock on. Only one RedisLock should be acquired for any given resource at once.</param>
+		/// <param name="expiryTime">How long the lock should be held for.
+		/// RedisLocks will automatically extend if the process that created the RedisLock is still alive and the RedisLock hasn't been disposed.</param>
+		/// <param name="waitTime">How long to block for until a lock can be acquired.</param>
+		/// <param name="retryTime">How long to wait between retries when trying to acquire a lock.</param>
+		/// <returns>A RedisLock object.</returns>
+		public RedisLock Create(string resource, TimeSpan expiryTime, TimeSpan waitTime, TimeSpan retryTime)
+		{
+			return new RedisLock(redisCaches, resource, expiryTime, waitTime, retryTime, logger: logger);
+		}
 
-        /// <summary>
-        /// Gets a RedisLock using the factory's set of redis endpoints. You should check the IsAcquired property before performing actions.
-        /// </summary>
-        /// <param name="resource">The resource string to lock on. Only one RedisLock should be acquired for any given resource at once.</param>
-        /// <param name="expiryTime">How long the lock should be held for.
-        /// RedisLocks will automatically extend if the process that created the RedisLock is still alive and the RedisLock hasn't been disposed.</param>
-        /// <returns>A RedisLock object.</returns>
-        public RedisLock Create(string resource, TimeSpan expiryTime)
-        {
-            return new RedisLock(redisCaches, resource, expiryTime, logger: logger);
-        }
-
-        /// <summary>
-        /// Gets a RedisLock using the factory's set of redis endpoints. You should check the IsAcquired property before performing actions.
-        /// Blocks and retries up to the specified time limits.
-        /// </summary>
-        /// <param name="resource">The resource string to lock on. Only one RedisLock should be acquired for any given resource at once.</param>
-        /// <param name="expiryTime">How long the lock should be held for.
-        /// RedisLocks will automatically extend if the process that created the RedisLock is still alive and the RedisLock hasn't been disposed.</param>
-        /// <param name="waitTime">How long to block for until a lock can be acquired.</param>
-        /// <param name="retryTime">How long to wait between retries when trying to acquire a lock.</param>
-        /// <returns>A RedisLock object.</returns>
-        public RedisLock Create(string resource, TimeSpan expiryTime, TimeSpan waitTime, TimeSpan retryTime)
-        {
-            return new RedisLock(redisCaches, resource, expiryTime, waitTime, retryTime, logger: logger);
-        }
-
-        public void Dispose()
-        {
-            foreach (var cache in redisCaches)
-            {
-                cache.Dispose();
-            }
-        }
-    }
+		public void Dispose()
+		{
+			foreach (var cache in redisCaches)
+			{
+				cache.Dispose();
+			}
+		}
+	}
 }
