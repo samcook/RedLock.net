@@ -10,7 +10,7 @@ RedLock.net is available using NuGet - search for [RedLock.net](https://www.nuge
 
 ## Usage
 
-Construct a `RedisLockFactory`, passing in a set of independent Redis endpoints. The Redis endpoints should be independent (i.e. not replicated masters/slaves).
+Construct a `RedisLockFactory`, passing in a set of Redis endpoints. The Redis endpoints should be independent (i.e. not replicated masters/slaves).
 
 You should keep hold of the `RedisLockFactory` and reuse it in your application. Each instance maintains its own connections with the configured Redis instances. Remember to dispose it when your app shuts down.
 
@@ -28,6 +28,8 @@ var endPoints = new[]
 };
 var redisLockFactory = new RedisLockFactory(endPoints);
 ```
+
+If you require more detailed configuration for the redis instances you are connecting to (e.g. password, SSL, connection timeout), you can use the `RedisLockEndPoint` class.
 
 #### When you want to lock on a resource (giving up immediately if the lock is not available):
 ```csharp
@@ -64,24 +66,18 @@ using (var redisLock = redisLockFactory.Create(resource, expiry, wait, retry))
 // the lock is automatically released at the end of the using block
 ```
 
-
-#### To use a Azure Redis Cache service connection:
-```csharp
-var azureRedisEndpoint = new AzureRedisCacheEndpoint
-{
-    Host = "YOUR_CACHE.redis.cache.windows.net",
-    AccessKey = "YOUR_ACCESS_KEY",
-    SSL = true
-};
-
-using (var redisLockFactory = new RedisLockFactory(azureRedisEndpoint))
-{
-	// do stuff
-}
-```
-
-
 #### On app shutdown:
 ```csharp
 redisLockFactory.Dispose();
+```
+
+#### Azure Redis Cache:
+If you are connecting to Azure Redis Cache, use the following configuration settings:
+```csharp
+var azureEndPoint = new RedisLockEndPoint
+{
+	EndPoint = new DnsEndPoint("YOUR_CACHE.redis.cache.windows.net", 6380),
+	Password = "YOUR_ACCESS_KEY",
+	Ssl = true
+};
 ```
