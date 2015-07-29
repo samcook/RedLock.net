@@ -61,6 +61,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\RedLock\AzureRedisCacheEndpoint.cs">
+      <Link>AzureRedisCacheEndpoint.cs</Link>
+    </Compile>
     <Compile Include="..\RedLock\Logging\IRedLockLogger.cs">
       <Link>Logging\IRedLockLogger.cs</Link>
     </Compile>
