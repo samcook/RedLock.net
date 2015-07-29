@@ -64,6 +64,23 @@ using (var redisLock = redisLockFactory.Create(resource, expiry, wait, retry))
 // the lock is automatically released at the end of the using block
 ```
 
+
+#### To use a Azure Redis Cache service connection:
+```csharp
+var azureRedisEndpoint = new AzureRedisCacheEndpoint
+{
+    Host = "YOUR_CACHE.redis.cache.windows.net",
+    AccessKey = "YOUR_ACCESS_KEY",
+    SSL = true
+};
+
+using (var redisLockFactory = new RedisLockFactory(azureRedisEndpoint))
+{
+	// do stuff
+}
+```
+
+
 #### On app shutdown:
 ```csharp
 redisLockFactory.Dispose();
