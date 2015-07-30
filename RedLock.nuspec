@@ -2,7 +2,7 @@
 <package>
   <metadata>
     <id>RedLock.net</id>
-    <version>1.2.0</version>
+    <version>1.3.0</version>
     <title>RedLock.net</title>
     <authors>Sam Cook</authors>
     <owners>Sam Cook</owners>
@@ -12,11 +12,12 @@
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>An implementation of the Redlock distributed lock algorithm</description>
     <releaseNotes>
+1.3.0 - Add password, SSL and connection timeout configuration options (enables use with Azure Redis Cache)
 1.2.0 - Lock/Extend/Unlock instances in parallel
 1.1.0 - Target .NET 4.0 and 4.5
 1.0.0 - Initial release
     </releaseNotes>
-    <copyright>Copyright 2014 Sam Cook</copyright>
+    <copyright>Copyright 2015 Sam Cook</copyright>
     <tags>RedLock Redis Distributed Lock</tags>
     <dependencies>
       <dependency id="StackExchange.Redis" version="1.0.328"/>
