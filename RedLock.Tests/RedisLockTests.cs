@@ -43,6 +43,12 @@ namespace RedLock.Tests
 			Password = "password"
 		};
 
+		private static readonly RedisLockEndPoint NonDefaultDatabaseServer = new RedisLockEndPoint
+		{
+			EndPoint = ActiveServer1,
+			RedisDatabase = 1
+		};
+
 		private static readonly IEnumerable<EndPoint> AllActiveEndPoints = new[]
 		{
 			ActiveServer1,
@@ -308,7 +314,13 @@ namespace RedLock.Tests
 				Ssl = true
 			};
 
-			CheckSingleRedisLock(new[] { endPoint }, true);
+			CheckSingleRedisLock(new[] {endPoint}, true);
+		}
+
+		[Test]
+		public void TestNonDefaultRedisDatabases()
+		{
+			CheckSingleRedisLock(new[] {NonDefaultDatabaseServer}, true);
 		}
 
 		private void CheckSingleRedisLock(IEnumerable<RedisLockEndPoint> endPoints, bool expectedToAcquire)

@@ -8,5 +8,6 @@ namespace RedLock
 		public bool Ssl { get; set; }
 		public string Password { get; set; }
 		public int? ConnectionTimeout { get; set; }
+		public int? RedisDatabase { get; set; }
 	}
 }

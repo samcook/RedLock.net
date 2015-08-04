@@ -73,6 +73,9 @@
     <Compile Include="..\RedLock\Properties\AssemblyInfo.cs">
       <Link>Properties\AssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="..\RedLock\RedisConnection.cs">
+      <Link>RedisConnection.cs</Link>
+    </Compile>
     <Compile Include="..\RedLock\RedisLock.cs">
       <Link>RedisLock.cs</Link>
     </Compile>

@@ -14,7 +14,7 @@ namespace RedLock
 	{
 		private readonly object lockObject = new object();
 
-		private readonly ICollection<ConnectionMultiplexer> redisCaches;
+		private readonly ICollection<RedisConnection> redisCaches;
 		private readonly IRedLockLogger logger;
 
 		private readonly int quorum;
@@ -58,8 +58,8 @@ namespace RedLock
 			get { return s => string.Format("redlock-{0}", s); }
 		}
 
-		public RedisLock(
-			ICollection<ConnectionMultiplexer> redisCaches,
+		internal RedisLock(
+			ICollection<RedisConnection> redisCaches,
 			string resource,
 			TimeSpan expiryTime,
 			TimeSpan? waitTime = null,
@@ -249,16 +249,18 @@ namespace RedLock
 			IsAcquired = false;
 		}
 
-		private bool LockInstance(ConnectionMultiplexer cache)
+		private bool LockInstance(RedisConnection cache)
 		{
-			var host = GetHost(cache);
+			var host = GetHost(cache.ConnectionMultiplexer);
 
 			var result = false;
 
 			try
 			{
 				logger.DebugWrite("LockInstance enter {0}: {1}, {2}, {3}", host, redisKey, LockId, expiryTime);
-				result = cache.GetDatabase().StringSet(redisKey, LockId, expiryTime, When.NotExists, CommandFlags.DemandMaster);
+				result = cache.ConnectionMultiplexer
+					.GetDatabase(cache.RedisDatabase)
+					.StringSet(redisKey, LockId, expiryTime, When.NotExists, CommandFlags.DemandMaster);
 			}
 			catch (Exception ex)
 			{
@@ -270,16 +272,17 @@ namespace RedLock
 			return result;
 		}
 
-		private bool ExtendInstance(ConnectionMultiplexer cache)
+		private bool ExtendInstance(RedisConnection cache)
 		{
-			var host = GetHost(cache);
+			var host = GetHost(cache.ConnectionMultiplexer);
 
 			var result = false;
 
 			try
 			{
 				logger.DebugWrite("ExtendInstance enter {0}: {1}, {2}, {3}", host, redisKey, LockId, expiryTime);
-				var extendResult = (long) cache.GetDatabase()
+				var extendResult = (long) cache.ConnectionMultiplexer
+					.GetDatabase(cache.RedisDatabase)
 					.ScriptEvaluate(ExtendIfMatchingValueScript, new RedisKey[] {redisKey}, new RedisValue[] {LockId, (int) expiryTime.TotalSeconds}, CommandFlags.DemandMaster);
 
 				result = (extendResult == 1);
@@ -294,16 +297,17 @@ namespace RedLock
 			return result;
 		}
 
-		private bool UnlockInstance(ConnectionMultiplexer cache)
+		private bool UnlockInstance(RedisConnection cache)
 		{
-			var host = GetHost(cache);
+			var host = GetHost(cache.ConnectionMultiplexer);
 
 			var result = false;
 
 			try
 			{
 				logger.DebugWrite("UnlockInstance enter {0}: {1}, {2}", host, redisKey, LockId);
-				result = (bool) cache.GetDatabase()
+				result = (bool) cache.ConnectionMultiplexer
+					.GetDatabase(cache.RedisDatabase)
 					.ScriptEvaluate(UnlockScript, new RedisKey[] {redisKey}, new RedisValue[] {LockId}, CommandFlags.DemandMaster);
 			}
 			catch (Exception ex)

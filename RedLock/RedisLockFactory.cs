@@ -10,7 +10,8 @@ namespace RedLock
 	public class RedisLockFactory : IDisposable
 	{
 		private const int DefaultConnectionTimeout = 100;
-		private readonly IList<ConnectionMultiplexer> redisCaches;
+		private const int DefaultRedisDatabase = 0;
+		private readonly IList<RedisConnection> redisCaches;
 		private readonly IRedLockLogger logger;
 
 		public RedisLockFactory(params EndPoint[] redisEndPoints)
@@ -50,9 +51,9 @@ namespace RedLock
 			this.logger = logger ?? new NullLogger();
 		}
 
-		private static IList<ConnectionMultiplexer> CreateRedisCaches(ICollection<RedisLockEndPoint> redisEndPoints)
+		private static IList<RedisConnection> CreateRedisCaches(ICollection<RedisLockEndPoint> redisEndPoints)
 		{
-			var caches = new List<ConnectionMultiplexer>(redisEndPoints.Count);
+			var caches = new List<RedisConnection>(redisEndPoints.Count);
 
 			foreach (var endPoint in redisEndPoints)
 			{
@@ -66,7 +67,11 @@ namespace RedLock
 
 				configuration.EndPoints.Add(endPoint.EndPoint);
 
-				caches.Add(ConnectionMultiplexer.Connect(configuration));
+				caches.Add(new RedisConnection
+				{
+					ConnectionMultiplexer = ConnectionMultiplexer.Connect(configuration),
+					RedisDatabase = endPoint.RedisDatabase ?? DefaultRedisDatabase
+				});
 			}
 
 			return caches;
@@ -103,7 +108,7 @@ namespace RedLock
 		{
 			foreach (var cache in redisCaches)
 			{
-				cache.Dispose();
+				cache.ConnectionMultiplexer.Dispose();
 			}
 		}
 	}
