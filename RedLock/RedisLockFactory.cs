@@ -70,7 +70,8 @@ namespace RedLock
 				caches.Add(new RedisConnection
 				{
 					ConnectionMultiplexer = ConnectionMultiplexer.Connect(configuration),
-					RedisDatabase = endPoint.RedisDatabase ?? DefaultRedisDatabase
+					RedisDatabase = endPoint.RedisDatabase ?? DefaultRedisDatabase,
+					RedisKeyFormat = string.IsNullOrEmpty(endPoint.RedisKeyFormat) ? RedisLock.DefaultRedisKeyFormat : endPoint.RedisKeyFormat
 				});
 			}
 

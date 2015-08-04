@@ -9,5 +9,6 @@ namespace RedLock
 		public string Password { get; set; }
 		public int? ConnectionTimeout { get; set; }
 		public int? RedisDatabase { get; set; }
+		public string RedisKeyFormat { get; set; }
 	}
 }

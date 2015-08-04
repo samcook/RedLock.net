@@ -21,7 +21,6 @@ namespace RedLock
 		private readonly int quorumRetryCount;
 		private readonly int quorumRetryDelayMs;
 		private readonly double clockDriftFactor;
-		private readonly string redisKey;
 		private bool isDisposed;
 
 		private Timer lockKeepaliveTimer;
@@ -53,10 +52,7 @@ namespace RedLock
 		private readonly TimeSpan? waitTime;
 		private readonly TimeSpan? retryTime;
 
-		public Func<string, string> DefaultRedisKeyFormatter
-		{
-			get { return s => string.Format("redlock-{0}", s); }
-		}
+		public const string DefaultRedisKeyFormat = "redlock-{0}";
 
 		internal RedisLock(
 			ICollection<RedisConnection> redisCaches,
@@ -64,18 +60,15 @@ namespace RedLock
 			TimeSpan expiryTime,
 			TimeSpan? waitTime = null,
 			TimeSpan? retryTime = null,
-			Func<string, string> redisKeyFormatter = null,
 			IRedLockLogger logger = null)
 		{
 			this.redisCaches = redisCaches;
-			var formatter = redisKeyFormatter ?? DefaultRedisKeyFormatter;
 			this.logger = logger ?? new NullLogger();
 
 			quorum = redisCaches.Count() / 2 + 1;
 			quorumRetryCount = 3;
 			quorumRetryDelayMs = 400;
 			clockDriftFactor = 0.01;
-			redisKey = formatter(resource);
 
 			Resource = resource;
 			LockId = Guid.NewGuid().ToString();
@@ -251,6 +244,7 @@ namespace RedLock
 
 		private bool LockInstance(RedisConnection cache)
 		{
+			var redisKey = GetRedisKey(cache.RedisKeyFormat, Resource);
 			var host = GetHost(cache.ConnectionMultiplexer);
 
 			var result = false;
@@ -274,6 +268,7 @@ namespace RedLock
 
 		private bool ExtendInstance(RedisConnection cache)
 		{
+			var redisKey = GetRedisKey(cache.RedisKeyFormat, Resource);
 			var host = GetHost(cache.ConnectionMultiplexer);
 
 			var result = false;
@@ -299,6 +294,7 @@ namespace RedLock
 
 		private bool UnlockInstance(RedisConnection cache)
 		{
+			var redisKey = GetRedisKey(cache.RedisKeyFormat, Resource);
 			var host = GetHost(cache.ConnectionMultiplexer);
 
 			var result = false;
@@ -318,6 +314,11 @@ namespace RedLock
 			logger.DebugWrite("UnlockInstance exit {0}: {1}, {2}, {3}", host, redisKey, LockId, result);
 
 			return result;
+		}
+
+		private static string GetRedisKey(string redisKeyFormat, string resource)
+		{
+			return string.Format(redisKeyFormat, resource);
 		}
 
 		internal static string GetHost(ConnectionMultiplexer cache)

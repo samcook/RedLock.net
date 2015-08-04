@@ -49,6 +49,12 @@ namespace RedLock.Tests
 			RedisDatabase = 1
 		};
 
+		private static readonly RedisLockEndPoint NonDefaultRedisKeyFormatServer = new RedisLockEndPoint
+		{
+			EndPoint = ActiveServer1,
+			RedisKeyFormat = "{0}-redislock"
+		};
+
 		private static readonly IEnumerable<EndPoint> AllActiveEndPoints = new[]
 		{
 			ActiveServer1,
@@ -122,6 +128,7 @@ namespace RedLock.Tests
 				{
 					var thread = new Thread(() =>
 					{
+						// ReSharper disable once AccessToDisposedClosure (we join on threads before disposing)
 						using (var redisLock = redisLockFactory.Create(
 							resource,
 							TimeSpan.FromSeconds(2),
@@ -323,6 +330,12 @@ namespace RedLock.Tests
 			CheckSingleRedisLock(new[] {NonDefaultDatabaseServer}, true);
 		}
 
+		[Test]
+		public void TestNonDefaultRedisKeyFormat()
+		{
+			CheckSingleRedisLock(new[] {NonDefaultRedisKeyFormatServer}, true);
+		}
+
 		private void CheckSingleRedisLock(IEnumerable<RedisLockEndPoint> endPoints, bool expectedToAcquire)
 		{
 			using (var redisLockFactory = new RedisLockFactory(endPoints, logger))
@@ -338,7 +351,7 @@ namespace RedLock.Tests
 		
 		private void CheckSingleRedisLock(IEnumerable<EndPoint> endPoints, bool expectedToAcquire)
 		{
-			CheckSingleRedisLock(endPoints.Select(x => new RedisLockEndPoint{ EndPoint = x}), expectedToAcquire);
+			CheckSingleRedisLock(endPoints.Select(x => new RedisLockEndPoint {EndPoint = x}), expectedToAcquire);
 		}
 
 		[Test]
