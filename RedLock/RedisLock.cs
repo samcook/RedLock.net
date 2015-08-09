@@ -54,7 +54,7 @@ namespace RedLock
 
 		public const string DefaultRedisKeyFormat = "redlock-{0}";
 
-		internal RedisLock(
+		private RedisLock(
 			ICollection<RedisConnection> redisCaches,
 			string resource,
 			TimeSpan expiryTime,
@@ -75,8 +75,48 @@ namespace RedLock
 			this.expiryTime = expiryTime;
 			this.waitTime = waitTime;
 			this.retryTime = retryTime;
+		}
 
-			Start();
+		internal static RedisLock Create(
+			ICollection<RedisConnection> redisCaches,
+			string resource,
+			TimeSpan expiryTime,
+			TimeSpan? waitTime = null,
+			TimeSpan? retryTime = null,
+			IRedLockLogger logger = null)
+		{
+			var redisLock = new RedisLock(
+				redisCaches,
+				resource,
+				expiryTime,
+				waitTime,
+				retryTime,
+				logger);
+
+			redisLock.Start();
+
+			return redisLock;
+		}
+
+		internal static async Task<RedisLock> CreateAsync(
+			ICollection<RedisConnection> redisCaches,
+			string resource,
+			TimeSpan expiryTime,
+			TimeSpan? waitTime = null,
+			TimeSpan? retryTime = null,
+			IRedLockLogger logger = null)
+		{
+			var redisLock = new RedisLock(
+				redisCaches,
+				resource,
+				expiryTime,
+				waitTime,
+				retryTime,
+				logger);
+
+			await redisLock.StartAsync().ConfigureAwait(false);
+
+			return redisLock;
 		}
 
 		private void Start()
@@ -95,6 +135,30 @@ namespace RedLock
 			else
 			{
 				IsAcquired = Acquire();
+			}
+
+			if (IsAcquired)
+			{
+				StartAutoExtendTimer();
+			}
+		}
+
+		private async Task StartAsync()
+		{
+			if (waitTime.HasValue && retryTime.HasValue && waitTime.Value.TotalMilliseconds > 0 && retryTime.Value.TotalMilliseconds > 0)
+			{
+				var endTime = DateTime.UtcNow + waitTime.Value;
+
+				while (!IsAcquired && DateTime.UtcNow <= endTime)
+				{
+					IsAcquired = await AcquireAsync().ConfigureAwait(false);
+
+					await TaskUtils.Delay(retryTime.Value).ConfigureAwait(false);
+				}
+			}
+			else
+			{
+				IsAcquired = await AcquireAsync().ConfigureAwait(false);
 			}
 
 			if (IsAcquired)
@@ -133,6 +197,45 @@ namespace RedLock
 					logger.DebugWrite("Sleeping {0}ms", sleepMs);
 
 					Thread.Sleep(sleepMs);
+				}
+			}
+
+			// give up
+			logger.DebugWrite("Could not get lock for id {0}, giving up", LockId);
+
+			return false;
+		}
+
+		private async Task<bool> AcquireAsync()
+		{
+			for (var i = 0; i < quorumRetryCount; i++)
+			{
+				logger.DebugWrite("Lock attempt {0} of {1}: {2}, {3}", i + 1, quorumRetryCount, Resource, expiryTime);
+
+				var startTick = DateTime.UtcNow.Ticks;
+
+				var locksAcquired = await LockAsync().ConfigureAwait(false);
+
+				var validityTicks = GetRemainingValidityTicks(startTick);
+
+				logger.DebugWrite("Acquired locks for id {0} in {1} of {2} instances, quorum is {3}, validityTicks is {4}", LockId, locksAcquired, redisCaches.Count(), quorum, validityTicks);
+
+				if (locksAcquired >= quorum && validityTicks > 0)
+				{
+					return true;
+				}
+
+				// we failed to get enough locks for a quorum, unlock everything and try again
+				await UnlockAsync().ConfigureAwait(false);
+
+				// only sleep if we have more retries left
+				if (i < quorumRetryCount - 1)
+				{
+					var sleepMs = ThreadSafeRandom.Next(quorumRetryDelayMs);
+
+					logger.DebugWrite("Sleeping {0}ms", sleepMs);
+
+					await TaskUtils.Delay(sleepMs).ConfigureAwait(false);
 				}
 			}
 
@@ -220,6 +323,15 @@ namespace RedLock
 			return locksAcquired;
 		}
 
+		private async Task<int> LockAsync()
+		{
+			var lockTasks = redisCaches.Select(LockInstanceAsync);
+
+			var lockResults = await TaskUtils.WhenAll(lockTasks).ConfigureAwait(false);
+
+			return lockResults.Count(x => x);
+		}
+
 		private int Extend()
 		{
 			var locksExtended = 0;
@@ -242,6 +354,13 @@ namespace RedLock
 			IsAcquired = false;
 		}
 
+		private async Task UnlockAsync()
+		{
+			var unlockTasks = redisCaches.Select(UnlockInstanceAsync);
+
+			await TaskUtils.WhenAll(unlockTasks).ConfigureAwait(false);
+		}
+
 		private bool LockInstance(RedisConnection cache)
 		{
 			var redisKey = GetRedisKey(cache.RedisKeyFormat, Resource);
@@ -262,6 +381,31 @@ namespace RedLock
 			}
 
 			logger.DebugWrite("LockInstance exit {0}: {1}, {2}, {3}", host, redisKey, LockId, result);
+
+			return result;
+		}
+
+		private async Task<bool> LockInstanceAsync(RedisConnection cache)
+		{
+			var redisKey = GetRedisKey(cache.RedisKeyFormat, Resource);
+			var host = GetHost(cache.ConnectionMultiplexer);
+
+			var result = false;
+
+			try
+			{
+				logger.DebugWrite("LockInstanceAsync enter {0}: {1}, {2}, {3}", host, redisKey, LockId, expiryTime);
+				result = await cache.ConnectionMultiplexer
+					.GetDatabase(cache.RedisDatabase)
+					.StringSetAsync(redisKey, LockId, expiryTime, When.NotExists, CommandFlags.DemandMaster)
+					.ConfigureAwait(false);
+			}
+			catch (Exception ex)
+			{
+				logger.DebugWrite("Error locking lock instance {0}: {1}", host, ex.Message);
+			}
+
+			logger.DebugWrite("LockInstanceAsync exit {0}: {1}, {2}, {3}", host, redisKey, LockId, result);
 
 			return result;
 		}
@@ -312,6 +456,31 @@ namespace RedLock
 			}
 
 			logger.DebugWrite("UnlockInstance exit {0}: {1}, {2}, {3}", host, redisKey, LockId, result);
+
+			return result;
+		}
+
+		private async Task<bool> UnlockInstanceAsync(RedisConnection cache)
+		{
+			var redisKey = GetRedisKey(cache.RedisKeyFormat, Resource);
+			var host = GetHost(cache.ConnectionMultiplexer);
+
+			var result = false;
+
+			try
+			{
+				logger.DebugWrite("UnlockInstanceAsync enter {0}: {1}, {2}", host, redisKey, LockId);
+				result = (bool) await cache.ConnectionMultiplexer
+					.GetDatabase(cache.RedisDatabase)
+					.ScriptEvaluateAsync(UnlockScript, new RedisKey[] { redisKey }, new RedisValue[] { LockId }, CommandFlags.DemandMaster)
+					.ConfigureAwait(false);
+			}
+			catch (Exception ex)
+			{
+				logger.DebugWrite("Error unlocking lock instance {0}: {1}", host, ex.Message);
+			}
+
+			logger.DebugWrite("UnlockInstanceAsync exit {0}: {1}, {2}, {3}", host, redisKey, LockId, result);
 
 			return result;
 		}

@@ -25,7 +25,7 @@
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
+    <DefineConstants>TRACE;NET40</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
@@ -84,6 +84,9 @@
     </Compile>
     <Compile Include="..\RedLock\RedisLockFactory.cs">
       <Link>RedisLockFactory.cs</Link>
+    </Compile>
+    <Compile Include="..\RedLock\Util\TaskUtils.cs">
+      <Link>Util\TaskUtils.cs</Link>
     </Compile>
     <Compile Include="..\RedLock\Util\ThreadSafeRandom.cs">
       <Link>Util\ThreadSafeRandom.cs</Link>

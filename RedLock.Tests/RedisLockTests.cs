@@ -114,6 +114,34 @@ namespace RedLock.Tests
 		}
 
 		[Test]
+		public async Task TestOverlappingLocksAsync()
+		{
+			var foo = DoOverlappingLocksAsync();
+
+			logger.InfoWrite("======================================================");
+
+			await foo;
+		}
+
+		private async Task DoOverlappingLocksAsync()
+		{
+			using (var redisLockFactory = new RedisLockFactory(AllActiveEndPoints, logger))
+			{
+				var resource = String.Format("testredislock-{0}", Guid.NewGuid());
+
+				using (var firstLock = await redisLockFactory.CreateAsync(resource, TimeSpan.FromSeconds(30)))
+				{
+					Assert.That(firstLock.IsAcquired, Is.True);
+
+					using (var secondLock = await redisLockFactory.CreateAsync(resource, TimeSpan.FromSeconds(30)))
+					{
+						Assert.That(secondLock.IsAcquired, Is.False);
+					}
+				}
+			}
+		}
+
+		[Test]
 		public void TestBlockingConcurrentLocks()
 		{
 			var locksAcquired = 0;
