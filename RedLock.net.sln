@@ -15,11 +15,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RedLock.Tests", "RedLock.Tests\RedLock.Tests.csproj", "{2DF8C6CF-482F-4C51-9BA0-1F7814CA91E0}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{9B512268-54F4-4439-A795-89D9AE2F0A8B}"
-	ProjectSection(SolutionItems) = preProject
-		.nuget\packages.config = .nuget\packages.config
-	EndProjectSection
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RedLock_Net40", "RedLock_Net40\RedLock_Net40.csproj", "{0FFA5029-E5AA-48E2-A915-FEAE3924CAB6}"
 EndProject
 Global
