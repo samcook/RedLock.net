@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 using log4net.Config;
 using NUnit.Framework;
 using RedLock.Logging;
-using RedLock.Logging.Log4Net;
 using RedLock.Util;
 
 namespace RedLock.Tests
@@ -16,14 +15,12 @@ namespace RedLock.Tests
 	[TestFixture]
 	public class RedisLockTests
 	{
-		private IRedLockLogger logger;
+		private static readonly ILog Logger = LogProvider.GetCurrentClassLogger();
 
 		[TestFixtureSetUp]
 		public void TestFixtureSetUp()
 		{
 			XmlConfigurator.Configure();
-
-			logger = new Log4NetLogger();
 		}
 
 		// make sure redis is running on these
@@ -97,9 +94,9 @@ namespace RedLock.Tests
 		[Test]
 		public void TestOverlappingLocks()
 		{
-			using (var redisLockFactory = new RedisLockFactory(AllActiveEndPoints, logger))
+			using (var redisLockFactory = new RedisLockFactory(AllActiveEndPoints))
 			{
-				var resource = String.Format("testredislock-{0}", Guid.NewGuid());
+				var resource = $"testredislock-{Guid.NewGuid()}";
 
 				using (var firstLock = redisLockFactory.Create(resource, TimeSpan.FromSeconds(30)))
 				{
@@ -116,18 +113,18 @@ namespace RedLock.Tests
 		[Test]
 		public async Task TestOverlappingLocksAsync()
 		{
-			var foo = DoOverlappingLocksAsync();
+			var task = DoOverlappingLocksAsync();
 
-			logger.InfoWrite("======================================================");
+			Logger.Info("======================================================");
 
-			await foo;
+			await task;
 		}
 
 		private async Task DoOverlappingLocksAsync()
 		{
-			using (var redisLockFactory = new RedisLockFactory(AllActiveEndPoints, logger))
+			using (var redisLockFactory = new RedisLockFactory(AllActiveEndPoints))
 			{
-				var resource = String.Format("testredislock-{0}", Guid.NewGuid());
+				var resource = $"testredislock-{Guid.NewGuid()}";
 
 				using (var firstLock = await redisLockFactory.CreateAsync(resource, TimeSpan.FromSeconds(30)))
 				{
@@ -146,9 +143,9 @@ namespace RedLock.Tests
 		{
 			var locksAcquired = 0;
 			
-			using (var redisLockFactory = new RedisLockFactory(AllActiveEndPoints, logger))
+			using (var redisLockFactory = new RedisLockFactory(AllActiveEndPoints))
 			{
-				var resource = String.Format("testblockingconcurrentlocks-{0}", Guid.NewGuid());
+				var resource = $"testblockingconcurrentlocks-{Guid.NewGuid()}";
 
 				var threads = new List<Thread>();
 
@@ -163,13 +160,13 @@ namespace RedLock.Tests
 							TimeSpan.FromSeconds(10),
 							TimeSpan.FromSeconds(0.5)))
 						{
-							logger.InfoWrite("Entering lock");
+							Logger.Info("Entering lock");
 							if (redisLock.IsAcquired)
 							{
 								Interlocked.Increment(ref locksAcquired);
 							}
 							Thread.Sleep(4000);
-							logger.InfoWrite("Leaving lock");
+							Logger.Info("Leaving lock");
 						}
 					});
 
@@ -190,9 +187,9 @@ namespace RedLock.Tests
 		[Test]
 		public void TestSequentialLocks()
 		{
-			using (var redisLockFactory = new RedisLockFactory(AllActiveEndPoints, logger))
+			using (var redisLockFactory = new RedisLockFactory(AllActiveEndPoints))
 			{
-				var resource = String.Format("testredislock-{0}", Guid.NewGuid());
+				var resource = $"testredislock-{Guid.NewGuid()}";
 
 				using (var firstLock = redisLockFactory.Create(resource, TimeSpan.FromSeconds(30)))
 				{
@@ -209,9 +206,9 @@ namespace RedLock.Tests
 		[Test]
 		public void TestRenewing()
 		{
-			using (var redisLockFactory = new RedisLockFactory(AllActiveEndPoints, logger))
+			using (var redisLockFactory = new RedisLockFactory(AllActiveEndPoints))
 			{
-				var resource = String.Format("testrenewinglock-{0}", Guid.NewGuid());
+				var resource = $"testrenewinglock-{Guid.NewGuid()}";
 
 				int extendCount;
 
@@ -231,9 +228,9 @@ namespace RedLock.Tests
 		[Test]
 		public void TestLockReleasedAfterTimeout()
 		{
-			using (var lockFactory = new RedisLockFactory(AllActiveEndPoints, logger))
+			using (var lockFactory = new RedisLockFactory(AllActiveEndPoints))
 			{
-				var resource = String.Format("testrenewinglock-{0}", Guid.NewGuid());
+				var resource = $"testrenewinglock-{Guid.NewGuid()}";
 
 				using (var firstLock = lockFactory.Create(resource, TimeSpan.FromSeconds(1)))
 				{
@@ -254,13 +251,13 @@ namespace RedLock.Tests
 		[Test]
 		public void TestQuorum()
 		{
-			logger.InfoWrite("======== Testing quorum with all active endpoints ========");
+			Logger.Info("======== Testing quorum with all active endpoints ========");
 			CheckSingleRedisLock(AllActiveEndPoints, true);
-			logger.InfoWrite("======== Testing quorum with no active endpoints ========");
+			Logger.Info("======== Testing quorum with no active endpoints ========");
 			CheckSingleRedisLock(AllInactiveEndPoints, false);
-			logger.InfoWrite("======== Testing quorum with enough active endpoints ========");
+			Logger.Info("======== Testing quorum with enough active endpoints ========");
 			CheckSingleRedisLock(SomeActiveEndPointsWithQuorum, true);
-			logger.InfoWrite("======== Testing quorum with not enough active endpoints ========");
+			Logger.Info("======== Testing quorum with not enough active endpoints ========");
 			CheckSingleRedisLock(SomeActiveEndPointsWithNoQuorum, false);
 		}
 
@@ -269,7 +266,7 @@ namespace RedLock.Tests
 		{
 			for (var i = 0; i < 2; i++)
 			{
-				logger.InfoWrite("======== Start test {0} ========", i);
+				Logger.Info($"======== Start test {i} ========");
 
 				TestRaceForQuorum();
 			}
@@ -280,7 +277,7 @@ namespace RedLock.Tests
 		{
 			var locksAcquired = 0;
 
-			var lockKey = String.Format("testredislock-{0}", ThreadSafeRandom.Next(10000));
+			var lockKey = $"testredislock-{ThreadSafeRandom.Next(10000)}";
 
 			var tasks = new List<Task>();
 
@@ -288,9 +285,9 @@ namespace RedLock.Tests
 			{
 				var task = new Task(() =>
 				{
-					logger.DebugWrite("Starting task");
+					Logger.Debug("Starting task");
 
-					using (var redisLockFactory = new RedisLockFactory(AllActiveEndPoints, logger))
+					using (var redisLockFactory = new RedisLockFactory(AllActiveEndPoints))
 					{
 						var sw = Stopwatch.StartNew();
 
@@ -298,11 +295,11 @@ namespace RedLock.Tests
 						{
 							sw.Stop();
 
-							logger.DebugWrite("Lock method took {0}ms to return, IsAcquired = {1}", sw.ElapsedMilliseconds, redisLock.IsAcquired);
+							Logger.Debug($"Lock method took {sw.ElapsedMilliseconds}ms to return, IsAcquired = {redisLock.IsAcquired}");
 
 							if (redisLock.IsAcquired)
 							{
-								logger.DebugWrite("Got lock with id {0}, sleeping for a bit", redisLock.LockId);
+								Logger.Debug($"Got lock with id {redisLock.LockId}, sleeping for a bit");
 
 								Interlocked.Increment(ref locksAcquired);
 
@@ -310,11 +307,11 @@ namespace RedLock.Tests
 								//Thread.Sleep(TimeSpan.FromSeconds(2));
 								Task.Delay(TimeSpan.FromSeconds(2)).Wait();
 
-								logger.DebugWrite("Lock with id {0} done sleeping", redisLock.LockId);
+								Logger.Debug($"Lock with id {redisLock.LockId} done sleeping");
 							}
 							else
 							{
-								logger.DebugWrite("Couldn't get lock, giving up");
+								Logger.Debug("Couldn't get lock, giving up");
 							}
 						}
 					}
@@ -364,11 +361,11 @@ namespace RedLock.Tests
 			CheckSingleRedisLock(new[] {NonDefaultRedisKeyFormatServer}, true);
 		}
 
-		private void CheckSingleRedisLock(IEnumerable<RedisLockEndPoint> endPoints, bool expectedToAcquire)
+		private static void CheckSingleRedisLock(IEnumerable<RedisLockEndPoint> endPoints, bool expectedToAcquire)
 		{
-			using (var redisLockFactory = new RedisLockFactory(endPoints, logger))
+			using (var redisLockFactory = new RedisLockFactory(endPoints))
 			{
-				var resource = String.Format("testredislock-{0}", Guid.NewGuid());
+				var resource = $"testredislock-{Guid.NewGuid()}";
 
 				using (var redisLock = redisLockFactory.Create(resource, TimeSpan.FromSeconds(30)))
 				{
@@ -377,7 +374,7 @@ namespace RedLock.Tests
 			}
 		}
 		
-		private void CheckSingleRedisLock(IEnumerable<EndPoint> endPoints, bool expectedToAcquire)
+		private static void CheckSingleRedisLock(IEnumerable<EndPoint> endPoints, bool expectedToAcquire)
 		{
 			CheckSingleRedisLock(endPoints.Select(x => new RedisLockEndPoint {EndPoint = x}), expectedToAcquire);
 		}
@@ -386,16 +383,9 @@ namespace RedLock.Tests
 		[Ignore]
 		public void TimeLock()
 		{
-			var l = new TraceLogger
+			using (var redisLockFactory = new RedisLockFactory(AllActiveEndPoints))
 			{
-				DebugEnabled = false,
-				ErrorEnabled = false
-			}; 
-			//var l = logger;
-
-			using (var redisLockFactory = new RedisLockFactory(AllActiveEndPoints, l))
-			{
-				var resource = String.Format("testredislock-{0}", Guid.NewGuid());
+				var resource = $"testredislock-{Guid.NewGuid()}";
 
 				for (var i = 0; i < 10; i++)
 				{
@@ -405,14 +395,14 @@ namespace RedLock.Tests
 					{
 						sw.Stop();
 
-						l.InfoWrite("Acquire {0} took {1} ticks, success {2}", i, sw.ElapsedTicks, redisLock.IsAcquired);
+						Logger.Info($"Acquire {i} took {sw.ElapsedTicks} ticks, success {redisLock.IsAcquired}");
 
 						sw.Restart();
 					}
 
 					sw.Stop();
 
-					l.InfoWrite("Release {0} took {1} ticks, success", i, sw.ElapsedTicks);
+					Logger.Info($"Release {i} took {sw.ElapsedTicks} ticks, success");
 				}
 			}
 		}

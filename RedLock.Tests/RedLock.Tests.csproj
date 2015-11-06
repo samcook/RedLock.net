@@ -74,10 +74,6 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\RedLock.Logging.Log4Net\RedLock.Logging.Log4Net.csproj">
-      <Project>{ED3D1A8D-1132-4549-94E1-9F6B8432D4D9}</Project>
-      <Name>RedLock.Logging.Log4Net</Name>
-    </ProjectReference>
     <ProjectReference Include="..\RedLock\RedLock.csproj">
       <Project>{C76CF80D-15B7-440B-9AFB-5B450E1C969B}</Project>
       <Name>RedLock</Name>

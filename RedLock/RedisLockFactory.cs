@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
-using RedLock.Logging;
 using StackExchange.Redis;
 
 namespace RedLock
@@ -13,19 +12,13 @@ namespace RedLock
 		private const int DefaultConnectionTimeout = 100;
 		private const int DefaultRedisDatabase = 0;
 		private readonly IList<RedisConnection> redisCaches;
-		private readonly IRedLockLogger logger;
-
-		public RedisLockFactory(params EndPoint[] redisEndPoints)
-			: this(redisEndPoints, null)
-		{
-		}
 
 		public RedisLockFactory(IEnumerable<EndPoint> redisEndPoints)
-			: this(redisEndPoints, null)
+			: this(redisEndPoints.ToArray())
 		{
 		}
 
-		public RedisLockFactory(IEnumerable<EndPoint> redisEndPoints, IRedLockLogger logger)
+		public RedisLockFactory(params EndPoint[] redisEndPoints)
 		{
 			var endPoints = redisEndPoints.Select(endPoint => new RedisLockEndPoint
 			{
@@ -33,23 +26,16 @@ namespace RedLock
 			});
 
 			redisCaches = CreateRedisCaches(endPoints.ToArray());
-			this.logger = logger ?? new NullLogger();
-		}
-
-		public RedisLockFactory(params RedisLockEndPoint[] redisEndPoints)
-			: this(redisEndPoints, null)
-		{
 		}
 
 		public RedisLockFactory(IEnumerable<RedisLockEndPoint> redisEndPoints)
-			: this(redisEndPoints, null)
+			: this(redisEndPoints.ToArray())
 		{
 		}
 
-		public RedisLockFactory(IEnumerable<RedisLockEndPoint> redisEndPoints, IRedLockLogger logger)
+		public RedisLockFactory(params RedisLockEndPoint[] redisEndPoints)
 		{
 			redisCaches = CreateRedisCaches(redisEndPoints.ToArray());
-			this.logger = logger ?? new NullLogger();
 		}
 
 		private static IList<RedisConnection> CreateRedisCaches(ICollection<RedisLockEndPoint> redisEndPoints)
@@ -88,7 +74,7 @@ namespace RedLock
 		/// <returns>A RedisLock object.</returns>
 		public RedisLock Create(string resource, TimeSpan expiryTime)
 		{
-			return RedisLock.Create(redisCaches, resource, expiryTime, logger: logger);
+			return RedisLock.Create(redisCaches, resource, expiryTime);
 		}
 
 		/// <summary>
@@ -103,7 +89,7 @@ namespace RedLock
 		/// <returns>A RedisLock object.</returns>
 		public RedisLock Create(string resource, TimeSpan expiryTime, TimeSpan waitTime, TimeSpan retryTime)
 		{
-			return RedisLock.Create(redisCaches, resource, expiryTime, waitTime, retryTime, logger: logger);
+			return RedisLock.Create(redisCaches, resource, expiryTime, waitTime, retryTime);
 		}
 
 		/// <summary>
@@ -115,7 +101,7 @@ namespace RedLock
 		/// <returns>A RedisLock object.</returns>
 		public async Task<RedisLock> CreateAsync(string resource, TimeSpan expiryTime)
 		{
-			return await RedisLock.CreateAsync(redisCaches, resource, expiryTime, logger: logger).ConfigureAwait(false);
+			return await RedisLock.CreateAsync(redisCaches, resource, expiryTime).ConfigureAwait(false);
 		}
 
 		/// <summary>
@@ -130,7 +116,7 @@ namespace RedLock
 		/// <returns>A RedisLock object.</returns>
 		public async Task<RedisLock> CreateAsync(string resource, TimeSpan expiryTime, TimeSpan waitTime, TimeSpan retryTime)
 		{
-			return await RedisLock.CreateAsync(redisCaches, resource, expiryTime, waitTime, retryTime, logger: logger);
+			return await RedisLock.CreateAsync(redisCaches, resource, expiryTime, waitTime, retryTime);
 		}
 
 		public void Dispose()

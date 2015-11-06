@@ -61,15 +61,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\RedLock\Logging\IRedLockLogger.cs">
-      <Link>Logging\IRedLockLogger.cs</Link>
-    </Compile>
-    <Compile Include="..\RedLock\Logging\NullLogger.cs">
-      <Link>Logging\NullLogger.cs</Link>
-    </Compile>
-    <Compile Include="..\RedLock\Logging\TraceLogger.cs">
-      <Link>Logging\TraceLogger.cs</Link>
-    </Compile>
     <Compile Include="..\RedLock\Properties\AssemblyInfo.cs">
       <Link>Properties\AssemblyInfo.cs</Link>
     </Compile>
@@ -91,6 +82,7 @@
     <Compile Include="..\RedLock\Util\ThreadSafeRandom.cs">
       <Link>Util\ThreadSafeRandom.cs</Link>
     </Compile>
+    <Compile Include="App_Packages\LibLog.4.2\LibLog.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
