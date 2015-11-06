@@ -129,7 +129,10 @@ namespace RedLock
 				{
 					IsAcquired = Acquire();
 
-					Thread.Sleep(retryTime.Value);
+					if (!IsAcquired)
+					{
+						Thread.Sleep(retryTime.Value);
+					}
 				}
 			}
 			else
@@ -153,7 +156,10 @@ namespace RedLock
 				{
 					IsAcquired = await AcquireAsync().ConfigureAwait(false);
 
-					await TaskUtils.Delay(retryTime.Value).ConfigureAwait(false);
+					if (!IsAcquired)
+					{
+						await TaskUtils.Delay(retryTime.Value).ConfigureAwait(false);
+					}
 				}
 			}
 			else
