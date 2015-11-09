@@ -116,7 +116,7 @@ namespace RedLock
 		/// <returns>A RedisLock object.</returns>
 		public async Task<RedisLock> CreateAsync(string resource, TimeSpan expiryTime, TimeSpan waitTime, TimeSpan retryTime)
 		{
-			return await RedisLock.CreateAsync(redisCaches, resource, expiryTime, waitTime, retryTime);
+			return await RedisLock.CreateAsync(redisCaches, resource, expiryTime, waitTime, retryTime).ConfigureAwait(false);
 		}
 
 		public void Dispose()
