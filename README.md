@@ -6,7 +6,7 @@ Makes use of the excellent [StackExchange.Redis](https://github.com/StackExchang
 
 Distributed locks are useful for ensuring only one process is using a particular resource at any given time (even if the processes are running on different machines).
 
-RedLock.net is available using NuGet - search for [RedLock.net](https://www.nuget.org/packages/RedLock.net).
+RedLock.net is available using NuGet - search for [RedLock.net](https://www.nuget.org/packages/RedLock.net) (or [RedLock.net.StrongName](https://www.nuget.org/packages/RedLock.net.StrongName) if you need a strong named version).
 
 ## Usage
 
