@@ -36,4 +36,6 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyInformationalVersion("1.6.1")]
 [assembly: AssemblyFileVersion("1.6.1.0")]
 
+#if !STRONG_NAME
 [assembly: InternalsVisibleTo("RedLock.Tests")]
+#endif

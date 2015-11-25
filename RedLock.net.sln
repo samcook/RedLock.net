@@ -11,11 +11,17 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		README.md = README.md
 		redlock-icon.png = redlock-icon.png
 		RedLock.nuspec = RedLock.nuspec
+		RedLock.StrongName.nuspec = RedLock.StrongName.nuspec
+		RedLock.StrongName.snk = RedLock.StrongName.snk
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RedLock.Tests", "RedLock.Tests\RedLock.Tests.csproj", "{2DF8C6CF-482F-4C51-9BA0-1F7814CA91E0}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RedLock_Net40", "RedLock_Net40\RedLock_Net40.csproj", "{0FFA5029-E5AA-48E2-A915-FEAE3924CAB6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RedLock.StrongName", "RedLock.StrongName\RedLock.StrongName.csproj", "{4988C554-74FC-415A-AEBB-808D788D7BA2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RedLock_Net40.StrongName", "RedLock_Net40.StrongName\RedLock_Net40.StrongName.csproj", "{A61A7710-3600-4498-A088-FE25955EECE9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -35,6 +41,14 @@ Global
 		{0FFA5029-E5AA-48E2-A915-FEAE3924CAB6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0FFA5029-E5AA-48E2-A915-FEAE3924CAB6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0FFA5029-E5AA-48E2-A915-FEAE3924CAB6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4988C554-74FC-415A-AEBB-808D788D7BA2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4988C554-74FC-415A-AEBB-808D788D7BA2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4988C554-74FC-415A-AEBB-808D788D7BA2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4988C554-74FC-415A-AEBB-808D788D7BA2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A61A7710-3600-4498-A088-FE25955EECE9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A61A7710-3600-4498-A088-FE25955EECE9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A61A7710-3600-4498-A088-FE25955EECE9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A61A7710-3600-4498-A088-FE25955EECE9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
