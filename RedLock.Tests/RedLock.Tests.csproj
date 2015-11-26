@@ -72,6 +72,16 @@
   <ItemGroup>
     <None Include="app.config" />
     <None Include="packages.config" />
+    <None Include="RedisConfig\6379\redis.conf" />
+    <None Include="RedisConfig\6380\redis.conf" />
+    <None Include="RedisConfig\6381\redis.conf" />
+    <None Include="RedisConfig\6382\redis.conf" />
+    <None Include="RedisConfig\redis-base.conf" />
+    <None Include="RedisConfig\run-all-servers.cmd" />
+    <None Include="RedisConfig\run-server-6379.cmd" />
+    <None Include="RedisConfig\run-server-6380.cmd" />
+    <None Include="RedisConfig\run-server-6381.cmd" />
+    <None Include="RedisConfig\run-server-6382.cmd" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\RedLock\RedLock.csproj">
