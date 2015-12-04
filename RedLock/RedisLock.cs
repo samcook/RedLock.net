@@ -37,9 +37,9 @@ namespace RedLock
 		private const string ExtendIfMatchingValueScript =
 			@"local currentVal = redis.call('get', KEYS[1])
 			if (currentVal == false) then
-				return redis.call('set', KEYS[1], ARGV[1], 'EX', ARGV[2])
+				return redis.call('set', KEYS[1], ARGV[1], 'PX', ARGV[2]) and 1 or 0
 			elseif (currentVal == ARGV[1]) then
-				return redis.call('expire', KEYS[1], ARGV[2])
+				return redis.call('pexpire', KEYS[1], ARGV[2])
 			else
 				return -1
 			end";
@@ -421,7 +421,7 @@ namespace RedLock
 				Logger.Debug(() => $"ExtendInstance enter {host}: {redisKey}, {LockId}, {expiryTime}");
 				var extendResult = (long) cache.ConnectionMultiplexer
 					.GetDatabase(cache.RedisDatabase)
-					.ScriptEvaluate(ExtendIfMatchingValueScript, new RedisKey[] {redisKey}, new RedisValue[] {LockId, (int) expiryTime.TotalSeconds}, CommandFlags.DemandMaster);
+					.ScriptEvaluate(ExtendIfMatchingValueScript, new RedisKey[] {redisKey}, new RedisValue[] {LockId, (long) expiryTime.TotalMilliseconds}, CommandFlags.DemandMaster);
 
 				result = (extendResult == 1);
 			}
