@@ -281,11 +281,8 @@ namespace RedLock
 
 							if (!IsAcquired)
 							{
-								if (lockKeepaliveTimer != null)
-								{
-									// Stop the timer
-									lockKeepaliveTimer.Change(Timeout.Infinite, Timeout.Infinite);
-								}
+								// Stop the timer
+								lockKeepaliveTimer?.Change(Timeout.Infinite, Timeout.Infinite);
 							}
 						}
 					}
@@ -500,14 +497,14 @@ namespace RedLock
 
 			if (dnsEndPoint != null)
 			{
-				return String.Format("{0}:{1}", dnsEndPoint.Host, dnsEndPoint.Port);
+				return $"{dnsEndPoint.Host}:{dnsEndPoint.Port}";
 			}
 
 			var ipEndPoint = endPoint as IPEndPoint;
 
 			if (ipEndPoint != null)
 			{
-				return String.Format("{0}:{1}", ipEndPoint.Address, ipEndPoint.Port);
+				return $"{ipEndPoint.Address}:{ipEndPoint.Port}";
 			}
 
 			return endPoint.ToString();
