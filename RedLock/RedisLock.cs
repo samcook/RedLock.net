@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Threading;
@@ -117,9 +118,9 @@ namespace RedLock
 		{
 			if (waitTime.HasValue && retryTime.HasValue && waitTime.Value.TotalMilliseconds > 0 && retryTime.Value.TotalMilliseconds > 0)
 			{
-				var endTime = DateTime.UtcNow + waitTime.Value;
+				var stopwatch = Stopwatch.StartNew();
 
-				while (!IsAcquired && DateTime.UtcNow <= endTime)
+				while (!IsAcquired && stopwatch.Elapsed <= waitTime.Value)
 				{
 					IsAcquired = Acquire();
 
@@ -144,9 +145,9 @@ namespace RedLock
 		{
 			if (waitTime.HasValue && retryTime.HasValue && waitTime.Value.TotalMilliseconds > 0 && retryTime.Value.TotalMilliseconds > 0)
 			{
-				var endTime = DateTime.UtcNow + waitTime.Value;
+				var stopwatch = Stopwatch.StartNew();
 
-				while (!IsAcquired && DateTime.UtcNow <= endTime)
+				while (!IsAcquired && stopwatch.Elapsed <= waitTime.Value)
 				{
 					IsAcquired = await AcquireAsync().ConfigureAwait(false);
 
@@ -174,7 +175,7 @@ namespace RedLock
 				var iteration = i + 1;
 				Logger.Debug(() => $"Lock attempt {iteration} of {quorumRetryCount}: {Resource}, {expiryTime}");
 
-				var startTick = DateTime.UtcNow.Ticks;
+				var startTick = Stopwatch.GetTimestamp();
 
 				var locksAcquired = Lock();
 
@@ -214,7 +215,7 @@ namespace RedLock
 				var iteration = i + 1;
 				Logger.Debug(() => $"Lock attempt {iteration} of {quorumRetryCount}: {Resource}, {expiryTime}");
 
-				var startTick = DateTime.UtcNow.Ticks;
+				var startTick = Stopwatch.GetTimestamp();
 
 				var locksAcquired = await LockAsync().ConfigureAwait(false);
 
@@ -262,7 +263,7 @@ namespace RedLock
 
 						if (IsAcquired)
 						{
-							var startTick = DateTime.UtcNow.Ticks;
+							var startTick = Stopwatch.GetTimestamp();
 
 							var locksExtended = Extend();
 
@@ -303,7 +304,7 @@ namespace RedLock
 			// Add 2 milliseconds to the drift to account for Redis expires precision,
 			// which is 1 milliescond, plus 1 millisecond min drift for small TTLs.
 			var driftTicks = ((long) (expiryTime.Ticks*clockDriftFactor)) + TimeSpan.FromMilliseconds(2).Ticks;
-			var validityTicks = expiryTime.Ticks - ((DateTime.UtcNow.Ticks) - startTick) - driftTicks;
+			var validityTicks = expiryTime.Ticks - (Stopwatch.GetTimestamp() - startTick) - driftTicks;
 			return validityTicks;
 		}
 
