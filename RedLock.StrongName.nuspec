@@ -2,7 +2,7 @@
 <package>
   <metadata>
     <id>RedLock.net.StrongName</id>
-    <version>1.6.4</version>
+    <version>1.7.0</version>
     <title>RedLock.net (Strong Named)</title>
     <authors>Sam Cook</authors>
     <owners>Sam Cook</owners>
@@ -12,6 +12,7 @@
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>An implementation of the Redlock distributed lock algorithm</description>
     <releaseNotes>
+1.7.0 - Add Create method overloads taking a CancellationToken
 1.6.4 - Switch from DateTime to Stopwatch for calculating elapsed time
 1.6.3 - Fix strong name signing for .NET 4.5 dll
 1.6.2 - Fix bug in extend script

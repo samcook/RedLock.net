@@ -380,6 +380,42 @@ namespace RedLock.Tests
 		}
 
 		[Test]
+		public void TestCancelBlockingLock()
+		{
+			var cts = new CancellationTokenSource();
+
+			var resource = $"testredislock-{Guid.NewGuid()}";
+
+			using (var redisLockFactory = new RedisLockFactory(AllActiveEndPoints))
+			{
+				using (var firstLock = redisLockFactory.Create(
+					resource,
+					TimeSpan.FromSeconds(30),
+					TimeSpan.FromSeconds(10),
+					TimeSpan.FromSeconds(1)))
+				{
+					Assert.That(firstLock.IsAcquired);
+
+					cts.CancelAfter(TimeSpan.FromSeconds(2));
+
+					Assert.Throws<OperationCanceledException>(() =>
+					{
+						using (var secondLock = redisLockFactory.Create(
+							resource,
+							TimeSpan.FromSeconds(30),
+							TimeSpan.FromSeconds(10),
+							TimeSpan.FromSeconds(1),
+							cts.Token))
+						{
+							// should never get here
+							Assert.Fail();
+						}
+					});
+				}
+			}
+		}
+
+		[Test]
 		[Ignore]
 		public void TimeLock()
 		{

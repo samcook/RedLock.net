@@ -52,6 +52,7 @@ namespace RedLock
 		private readonly TimeSpan expiryTime;
 		private readonly TimeSpan? waitTime;
 		private readonly TimeSpan? retryTime;
+		private readonly CancellationToken cancellationToken;
 
 		public const string DefaultRedisKeyFormat = "redlock-{0}";
 
@@ -60,11 +61,12 @@ namespace RedLock
 			string resource,
 			TimeSpan expiryTime,
 			TimeSpan? waitTime = null,
-			TimeSpan? retryTime = null)
+			TimeSpan? retryTime = null,
+			CancellationToken? cancellationToken = null)
 		{
 			this.redisCaches = redisCaches;
 
-			quorum = redisCaches.Count() / 2 + 1;
+			quorum = redisCaches.Count / 2 + 1;
 			quorumRetryCount = 3;
 			quorumRetryDelayMs = 400;
 			clockDriftFactor = 0.01;
@@ -74,6 +76,7 @@ namespace RedLock
 			this.expiryTime = expiryTime;
 			this.waitTime = waitTime;
 			this.retryTime = retryTime;
+			this.cancellationToken = cancellationToken ?? CancellationToken.None;
 		}
 
 		internal static RedisLock Create(
@@ -81,14 +84,16 @@ namespace RedLock
 			string resource,
 			TimeSpan expiryTime,
 			TimeSpan? waitTime = null,
-			TimeSpan? retryTime = null)
+			TimeSpan? retryTime = null,
+			CancellationToken? cancellationToken = null)
 		{
 			var redisLock = new RedisLock(
 				redisCaches,
 				resource,
 				expiryTime,
 				waitTime,
-				retryTime);
+				retryTime,
+				cancellationToken);
 
 			redisLock.Start();
 
@@ -100,14 +105,16 @@ namespace RedLock
 			string resource,
 			TimeSpan expiryTime,
 			TimeSpan? waitTime = null,
-			TimeSpan? retryTime = null)
+			TimeSpan? retryTime = null,
+			CancellationToken? cancellationToken = null)
 		{
 			var redisLock = new RedisLock(
 				redisCaches,
 				resource,
 				expiryTime,
 				waitTime,
-				retryTime);
+				retryTime,
+				cancellationToken);
 
 			await redisLock.StartAsync().ConfigureAwait(false);
 
@@ -122,9 +129,11 @@ namespace RedLock
 
 				while (!IsAcquired && stopwatch.Elapsed <= waitTime.Value)
 				{
+					cancellationToken.ThrowIfCancellationRequested();
+
 					IsAcquired = Acquire();
 
-					if (!IsAcquired)
+					if (!IsAcquired && !cancellationToken.IsCancellationRequested)
 					{
 						Thread.Sleep(retryTime.Value);
 					}
@@ -149,9 +158,11 @@ namespace RedLock
 
 				while (!IsAcquired && stopwatch.Elapsed <= waitTime.Value)
 				{
+					cancellationToken.ThrowIfCancellationRequested();
+
 					IsAcquired = await AcquireAsync().ConfigureAwait(false);
 
-					if (!IsAcquired)
+					if (!IsAcquired && !cancellationToken.IsCancellationRequested)
 					{
 						await TaskUtils.Delay(retryTime.Value).ConfigureAwait(false);
 					}
