@@ -270,32 +270,20 @@ namespace RedLock
 					{
 						Logger.Debug(() => $"Lock renewal timer fired for resource '{Resource}', lockId '{LockId}'");
 
-						var extendSuccess = false;
+						var startTick = Stopwatch.GetTimestamp();
 
-						if (IsAcquired)
+						var locksExtended = Extend();
+
+						var validityTicks = GetRemainingValidityTicks(startTick);
+
+						if (locksExtended >= quorum && validityTicks > 0)
 						{
-							var startTick = Stopwatch.GetTimestamp();
-
-							var locksExtended = Extend();
-
-							var validityTicks = GetRemainingValidityTicks(startTick);
-
-							if (locksExtended >= quorum && validityTicks > 0)
-							{
-								extendSuccess = true;
-								ExtendCount++;
-							}
+							IsAcquired = true;
+							ExtendCount++;
 						}
-
-						lock (lockObject)
+						else
 						{
-							IsAcquired = extendSuccess;
-
-							if (!IsAcquired)
-							{
-								// Stop the timer
-								lockKeepaliveTimer?.Change(Timeout.Infinite, Timeout.Infinite);
-							}
+							IsAcquired = false;
 						}
 					}
 					catch (Exception exception)
