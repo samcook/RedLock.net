@@ -416,6 +416,24 @@ namespace RedLock.Tests
 		}
 
 		[Test]
+		public void TestFactoryHasAtLeastOneEndPoint()
+		{
+			Assert.Throws<ArgumentException>(() =>
+			{
+				using (var redisLockFactory = new RedisLockFactory(new EndPoint[] {}))
+				{
+				}
+			});
+
+			Assert.Throws<ArgumentNullException>(() =>
+			{
+				using (var redisLockFactory = new RedisLockFactory((IEnumerable<EndPoint>) null))
+				{
+				}
+			});
+		}
+
+		[Test]
 		[Ignore]
 		public void TimeLock()
 		{

@@ -56,6 +56,9 @@ namespace RedLock
 
 		public const string DefaultRedisKeyFormat = "redlock-{0}";
 
+		private readonly TimeSpan minimumExpiryTime = TimeSpan.FromMilliseconds(10);
+		private readonly TimeSpan minimumRetryTime = TimeSpan.FromMilliseconds(10);
+
 		private RedisLock(
 			ICollection<RedisConnection> redisCaches,
 			string resource,
@@ -64,6 +67,18 @@ namespace RedLock
 			TimeSpan? retryTime = null,
 			CancellationToken? cancellationToken = null)
 		{
+			if (expiryTime < minimumExpiryTime)
+			{
+				Logger.Warn($"Expiry time {expiryTime.TotalMilliseconds}ms too low, setting to {minimumExpiryTime.TotalMilliseconds}ms");
+				expiryTime = minimumExpiryTime;
+			}
+
+			if (retryTime != null && retryTime.Value < minimumRetryTime)
+			{
+				Logger.Warn($"Retry time {retryTime.Value.TotalMilliseconds}ms too low, setting to {minimumRetryTime.TotalMilliseconds}ms");
+				retryTime = minimumRetryTime;
+			}
+
 			this.redisCaches = redisCaches;
 
 			quorum = redisCaches.Count / 2 + 1;

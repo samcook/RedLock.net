@@ -41,6 +41,11 @@ namespace RedLock
 
 		private static IList<RedisConnection> CreateRedisCaches(ICollection<RedisLockEndPoint> redisEndPoints)
 		{
+			if (!redisEndPoints.Any())
+			{
+				throw new ArgumentException("No endpoints specified");
+			}
+
 			var caches = new List<RedisConnection>(redisEndPoints.Count);
 
 			foreach (var endPoint in redisEndPoints)
