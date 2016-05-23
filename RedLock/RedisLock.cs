@@ -148,9 +148,9 @@ namespace RedLock
 
 					IsAcquired = Acquire();
 
-					if (!IsAcquired && !cancellationToken.IsCancellationRequested)
+					if (!IsAcquired)
 					{
-						Thread.Sleep(retryTime.Value);
+						TaskUtils.Delay(retryTime.Value, cancellationToken).Wait(cancellationToken);
 					}
 				}
 			}
@@ -177,9 +177,9 @@ namespace RedLock
 
 					IsAcquired = await AcquireAsync().ConfigureAwait(false);
 
-					if (!IsAcquired && !cancellationToken.IsCancellationRequested)
+					if (!IsAcquired)
 					{
-						await TaskUtils.Delay(retryTime.Value).ConfigureAwait(false);
+						await TaskUtils.Delay(retryTime.Value, cancellationToken).ConfigureAwait(false);
 					}
 				}
 			}
