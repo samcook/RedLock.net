@@ -1,14 +1,37 @@
-﻿using System.Net;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Net;
 
 namespace RedLock
 {
 	public class RedisLockEndPoint
 	{
+		public RedisLockEndPoint()
+		{
+			EndPoints = new List<EndPoint>();
+		}
+
 		/// <summary>
 		/// The endpoint for the redis connection.
 		/// </summary>
-		public EndPoint EndPoint { get; set; }
-		
+		public EndPoint EndPoint {
+			get
+			{
+				return EndPoints.FirstOrDefault();
+			}
+			set
+			{
+				EndPoints = new List<EndPoint> {value};
+			}
+		}
+
+		/// <summary>
+		/// The endpoints for the redis connection. Can be used for connecting to replicated master/slaves.
+		/// These servers will all be considered a single entity as far as the RedLock algorithm is concerned.
+		/// See http://redis.io/topics/distlock#why-failover-based-implementations-are-not-enough
+		/// </summary>
+		public IList<EndPoint> EndPoints { get; private set; }
+
 		/// <summary>
 		/// Whether to use SSL for the redis connection.
 		/// </summary>
@@ -36,5 +59,11 @@ namespace RedLock
 		/// Defaults to "redlock-{0}" if not specified.
 		/// </summary>
 		public string RedisKeyFormat { get; set; }
+
+		/// <summary>
+		/// The number of seconds between config change checks
+		/// Defaults to 10 seconds if not specified.
+		/// </summary>
+		public int? ConfigCheckSeconds { get; set; }
 	}
 }

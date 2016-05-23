@@ -4,14 +4,18 @@ using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
+using RedLock.Logging;
 using StackExchange.Redis;
 
 namespace RedLock
 {
 	public class RedisLockFactory : IDisposable
 	{
+		private static readonly ILog Logger = LogProvider.GetCurrentClassLogger();
+
 		private const int DefaultConnectionTimeout = 100;
 		private const int DefaultRedisDatabase = 0;
+		private const int DefaultConfigCheckSeconds = 10;
 		private readonly IList<RedisConnection> redisCaches;
 
 		public RedisLockFactory(IEnumerable<EndPoint> redisEndPoints)
@@ -55,17 +59,43 @@ namespace RedLock
 					AbortOnConnectFail = false,
 					ConnectTimeout = endPoint.ConnectionTimeout ?? DefaultConnectionTimeout,
 					Ssl = endPoint.Ssl,
-					Password = endPoint.Password
+					Password = endPoint.Password,
+					ConfigCheckSeconds = endPoint.ConfigCheckSeconds ?? DefaultConfigCheckSeconds
 				};
 
-				configuration.EndPoints.Add(endPoint.EndPoint);
+				foreach (var e in endPoint.EndPoints)
+				{
+					configuration.EndPoints.Add(e);
+				}
 
-				caches.Add(new RedisConnection
+				var redisConnection = new RedisConnection
 				{
 					ConnectionMultiplexer = ConnectionMultiplexer.Connect(configuration),
 					RedisDatabase = endPoint.RedisDatabase ?? DefaultRedisDatabase,
 					RedisKeyFormat = string.IsNullOrEmpty(endPoint.RedisKeyFormat) ? RedisLock.DefaultRedisKeyFormat : endPoint.RedisKeyFormat
-				});
+				};
+
+				redisConnection.ConnectionMultiplexer.ConnectionFailed += (sender, args) =>
+				{
+					Logger.Debug(() => $"ConnectionFailed: {args.EndPoint} ConnectionType: {args.ConnectionType} FailureType: {args.FailureType}");
+				};
+
+				redisConnection.ConnectionMultiplexer.ConnectionRestored += (sender, args) =>
+				{
+					Logger.Debug(() => $"ConnectionRestored: {args.EndPoint} ConnectionType: {args.ConnectionType} FailureType: {args.FailureType}");
+				};
+
+				redisConnection.ConnectionMultiplexer.ConfigurationChanged += (sender, args) =>
+				{
+					Logger.Debug(() => $"ConfigurationChanged: {args.EndPoint}");
+				};
+
+				redisConnection.ConnectionMultiplexer.ConfigurationChangedBroadcast += (sender, args) =>
+				{
+					Logger.Debug(() => $"ConfigurationChangedBroadcast: {args.EndPoint}");
+				};
+
+				caches.Add(redisConnection);
 			}
 
 			return caches;
