@@ -10,7 +10,7 @@ RedLock.net is available using NuGet - search for [RedLock.net](https://www.nuge
 
 ## Usage
 
-Construct a `RedisLockFactory`, passing in a set of Redis endpoints. The Redis endpoints should be independent (i.e. not replicated masters/slaves).
+Construct a `RedisLockFactory`, passing in a set of Redis endpoints. Each endpoint passed to the constructor should be independent (i.e. not replicated masters/slaves). See below for more information on using RedLock.net with replicated instances.
 
 You should keep hold of the `RedisLockFactory` and reuse it in your application. Each instance maintains its own connections with the configured Redis instances. Remember to dispose it when your app shuts down.
 
@@ -66,6 +66,8 @@ using (var redisLock = await redisLockFactory.CreateAsync(resource, expiry, wait
 // the lock is automatically released at the end of the using block
 ```
 
+You can also pass a `CancellationToken` to the blocking `Create` methods if you want to be able to cancel the blocking wait.
+
 #### On app shutdown:
 ```csharp
 redisLockFactory.Dispose();
@@ -81,3 +83,49 @@ var azureEndPoint = new RedisLockEndPoint
 	Ssl = true
 };
 ```
+
+#### Usage with replicated instances:
+The Redlock algorithm is designed to be used with multiple independent Redis instances (see http://redis.io/topics/distlock#why-failover-based-implementations-are-not-enough for more detail on why this is the case).
+
+However, since RedLock.net 1.7.3 there is support for replicated master/slave instances. To do so, configure RedLock using the `RedisLockEndPoint` class, providing the replicated redis instances with the `EndPoints` property.
+Each `RedisLockEndPoint` that is passed to the `RedisLockFactory` constructor will be treated as a single unit as far as the RedLock algorithm is concerned.
+
+If you have multiple independent sets of replicated Redis instances, you can use those with RedLock.net in the same way you would use multiple non-replicated independent Redis instances.
+```csharp
+var redisLockEndPoints = new[]
+{
+	new RedisLockEndPoint
+	{
+		EndPoints =
+		{
+			new DnsEndPoint("replicatedset1-server1", 6379),
+			new DnsEndPoint("replicatedset1-server2", 6379),
+			new DnsEndPoint("replicatedset1-server3", 6379)
+		}
+	},
+	new RedisLockEndPoint
+	{
+		EndPoints =
+		{
+			new DnsEndPoint("replicatedset2-server1", 6379),
+			new DnsEndPoint("replicatedset2-server2", 6379),
+			new DnsEndPoint("replicatedset2-server3", 6379)
+		}
+	},
+	new RedisLockEndPoint
+	{
+		EndPoint = new DnsEndPoint("independent-server", 6379)
+	}
+};
+
+var redisLockFactory = new RedisLockFactory(endPoints);
+```
+
+##### Considerations when using replicated instances
+Using replicated instances is not the suggested way to use RedLock, however if your environment is configured that way and you are aware of the potential risks it is possible to configure.
+
+Since all operations that RedLock.net performs in Redis (Lock, Extend and Unlock) require writing, they can only be performed on the master. If your replicated Redis instances are not configured to automatically promote one of the slaves to master in the case of the master becoming inaccessible, the replicated instances will be unable to be used by RedLock until there is manual intervention to reinstate a master.
+
+There is the potential for a master to become inaccessible after acquiring a lock, but before that lock is propogated to the replicated slaves. If one of the slaves is then promoted to master, the lock will not have been acquired within Redis, and there is the possibility that another process could also acquire the lock, resulting in two processes running within the lock section at the same time. Running with multiple independent instances (or multiple independent replicated instances) should mitigate this somewhat, as the RedLock quorum is still required before another process can acquire the lock.
+
+There is the potential for a master to become inaccessible after releasing a lock, but before the lock removal is propogated to the replicated slaves. This will result in the lock continuing to be held until the Redis key expires after the specified expiry time.
