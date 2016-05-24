@@ -5,6 +5,7 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using RedLock.Logging;
+using RedLock.Util;
 using StackExchange.Redis;
 
 namespace RedLock
@@ -77,22 +78,22 @@ namespace RedLock
 
 				redisConnection.ConnectionMultiplexer.ConnectionFailed += (sender, args) =>
 				{
-					Logger.Debug(() => $"ConnectionFailed: {args.EndPoint} ConnectionType: {args.ConnectionType} FailureType: {args.FailureType}");
+					Logger.Debug(() => $"ConnectionFailed: {args.EndPoint.GetFriendlyName()} ConnectionType: {args.ConnectionType} FailureType: {args.FailureType}");
 				};
 
 				redisConnection.ConnectionMultiplexer.ConnectionRestored += (sender, args) =>
 				{
-					Logger.Debug(() => $"ConnectionRestored: {args.EndPoint} ConnectionType: {args.ConnectionType} FailureType: {args.FailureType}");
+					Logger.Debug(() => $"ConnectionRestored: {args.EndPoint.GetFriendlyName()} ConnectionType: {args.ConnectionType} FailureType: {args.FailureType}");
 				};
 
 				redisConnection.ConnectionMultiplexer.ConfigurationChanged += (sender, args) =>
 				{
-					Logger.Debug(() => $"ConfigurationChanged: {args.EndPoint}");
+					Logger.Debug(() => $"ConfigurationChanged: {args.EndPoint.GetFriendlyName()}");
 				};
 
 				redisConnection.ConnectionMultiplexer.ConfigurationChangedBroadcast += (sender, args) =>
 				{
-					Logger.Debug(() => $"ConfigurationChangedBroadcast: {args.EndPoint}");
+					Logger.Debug(() => $"ConfigurationChangedBroadcast: {args.EndPoint.GetFriendlyName()}");
 				};
 
 				caches.Add(redisConnection);

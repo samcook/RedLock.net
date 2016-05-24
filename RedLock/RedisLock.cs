@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Net;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using RedLock.Logging;
@@ -506,23 +507,20 @@ namespace RedLock
 
 		internal static string GetHost(ConnectionMultiplexer cache)
 		{
-			var endPoint = cache.GetEndPoints()[0];
+			var result = new StringBuilder();
 
-			var dnsEndPoint = endPoint as DnsEndPoint;
-
-			if (dnsEndPoint != null)
+			foreach (var endPoint in cache.GetEndPoints())
 			{
-				return $"{dnsEndPoint.Host}:{dnsEndPoint.Port}";
+				var server = cache.GetServer(endPoint);
+
+				result.Append(server.EndPoint.GetFriendlyName());
+				result.Append(" (");
+				result.Append(server.IsSlave ? "slave" : "master");
+				result.Append(server.IsConnected ? "" : ", disconnected");
+				result.Append("), ");
 			}
 
-			var ipEndPoint = endPoint as IPEndPoint;
-
-			if (ipEndPoint != null)
-			{
-				return $"{ipEndPoint.Address}:{ipEndPoint.Port}";
-			}
-
-			return endPoint.ToString();
+			return result.ToString().TrimEnd(' ', ',');
 		}
 
 		public void Dispose()

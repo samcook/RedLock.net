@@ -68,6 +68,9 @@
     <Compile Include="..\RedLock\RedisLockFactory.cs">
       <Link>RedisLockFactory.cs</Link>
     </Compile>
+    <Compile Include="..\RedLock\Util\EndPointExtensions.cs">
+      <Link>Util\EndPointExtensions.cs</Link>
+    </Compile>
     <Compile Include="..\RedLock\Util\TaskUtils.cs">
       <Link>Util\TaskUtils.cs</Link>
     </Compile>
