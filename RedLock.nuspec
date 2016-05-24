@@ -2,7 +2,7 @@
 <package>
   <metadata>
     <id>RedLock.net</id>
-    <version>1.7.2</version>
+    <version>1.7.3</version>
     <title>RedLock.net</title>
     <authors>Sam Cook</authors>
     <owners>Sam Cook</owners>
@@ -12,6 +12,7 @@
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>An implementation of the Redlock distributed lock algorithm</description>
     <releaseNotes>
+1.7.3 - Add support for connecting to replicated Redis instances
 1.7.2 - Sanity checks on input values
 1.7.1 - Lock extend timer will now reacquire a lost lock if it is available
 1.7.0 - Add Create method overloads taking a CancellationToken
