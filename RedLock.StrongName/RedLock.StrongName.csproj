@@ -53,6 +53,12 @@
     <Compile Include="..\RedLock\App_Packages\LibLog.4.2\LibLog.cs">
       <Link>App_Packages\LibLog.4.2\LibLog.cs</Link>
     </Compile>
+    <Compile Include="..\RedLock\IRedisLock.cs">
+      <Link>IRedisLock.cs</Link>
+    </Compile>
+    <Compile Include="..\RedLock\IRedisLockFactory.cs">
+      <Link>IRedisLockFactory.cs</Link>
+    </Compile>
     <Compile Include="..\RedLock\Properties\AssemblyInfo.cs">
       <Link>Properties\AssemblyInfo.cs</Link>
     </Compile>

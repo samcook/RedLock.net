@@ -237,7 +237,7 @@ namespace RedLock.Tests
 					Assert.That(firstLock.IsAcquired, Is.True);
 
 					Thread.Sleep(550); // should cause keep alive timer to fire once
-					firstLock.StopKeepAliveTimer(); // stop the keep alive timer to simulate process crash
+					((RedisLock)firstLock).StopKeepAliveTimer(); // stop the keep alive timer to simulate process crash
 					Thread.Sleep(1200); // wait until the key expires from redis
 
 					using (var secondLock = lockFactory.Create(resource, TimeSpan.FromSeconds(1)))

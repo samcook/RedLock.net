@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Net;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -12,7 +11,7 @@ using StackExchange.Redis;
 
 namespace RedLock
 {
-	public class RedisLock : IDisposable
+	public class RedisLock : IRedisLock
 	{
 		private readonly object lockObject = new object();
 
@@ -47,7 +46,7 @@ namespace RedLock
 			end";
 
 		public readonly string Resource;
-		public readonly string LockId;
+		public string LockId { get; private set; }
 		public bool IsAcquired { get; private set; }
 		public int ExtendCount { get; private set; }
 		private readonly TimeSpan expiryTime;
