@@ -144,8 +144,6 @@ namespace RedLock
 
 				while (!IsAcquired && stopwatch.Elapsed <= waitTime.Value)
 				{
-					cancellationToken.ThrowIfCancellationRequested();
-
 					IsAcquired = Acquire();
 
 					if (!IsAcquired)
@@ -173,8 +171,6 @@ namespace RedLock
 
 				while (!IsAcquired && stopwatch.Elapsed <= waitTime.Value)
 				{
-					cancellationToken.ThrowIfCancellationRequested();
-
 					IsAcquired = await AcquireAsync().ConfigureAwait(false);
 
 					if (!IsAcquired)
@@ -198,6 +194,8 @@ namespace RedLock
 		{
 			for (var i = 0; i < quorumRetryCount; i++)
 			{
+				cancellationToken.ThrowIfCancellationRequested();
+
 				var iteration = i + 1;
 				Logger.Debug(() => $"Lock attempt {iteration} of {quorumRetryCount}: {Resource}, {expiryTime}");
 
@@ -207,7 +205,7 @@ namespace RedLock
 
 				var validityTicks = GetRemainingValidityTicks(startTick);
 
-				Logger.Debug(() => $"Acquired locks for id {LockId} in {locksAcquired} of {redisCaches.Count()} instances, quorum is {quorum}, validityTicks is {validityTicks}");
+				Logger.Debug(() => $"Acquired locks for id {LockId} in {locksAcquired} of {redisCaches.Count} instances, quorum is {quorum}, validityTicks is {validityTicks}");
 
 				if (locksAcquired >= quorum && validityTicks > 0)
 				{
@@ -224,7 +222,7 @@ namespace RedLock
 
 					Logger.Debug(() => $"Sleeping {sleepMs}ms");
 
-					Thread.Sleep(sleepMs);
+					TaskUtils.Delay(sleepMs, cancellationToken).Wait(cancellationToken);
 				}
 			}
 
@@ -238,6 +236,8 @@ namespace RedLock
 		{
 			for (var i = 0; i < quorumRetryCount; i++)
 			{
+				cancellationToken.ThrowIfCancellationRequested();
+
 				var iteration = i + 1;
 				Logger.Debug(() => $"Lock attempt {iteration} of {quorumRetryCount}: {Resource}, {expiryTime}");
 
@@ -247,7 +247,7 @@ namespace RedLock
 
 				var validityTicks = GetRemainingValidityTicks(startTick);
 
-				Logger.Debug(() => $"Acquired locks for id {LockId} in {locksAcquired} of {redisCaches.Count()} instances, quorum is {quorum}, validityTicks is {validityTicks}");
+				Logger.Debug(() => $"Acquired locks for id {LockId} in {locksAcquired} of {redisCaches.Count} instances, quorum is {quorum}, validityTicks is {validityTicks}");
 
 				if (locksAcquired >= quorum && validityTicks > 0)
 				{
@@ -264,7 +264,7 @@ namespace RedLock
 
 					Logger.Debug(() => $"Sleeping {sleepMs}ms");
 
-					await TaskUtils.Delay(sleepMs).ConfigureAwait(false);
+					await TaskUtils.Delay(sleepMs, cancellationToken).ConfigureAwait(false);
 				}
 			}
 
