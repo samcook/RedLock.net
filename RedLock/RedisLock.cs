@@ -46,7 +46,7 @@ namespace RedLock
 			end";
 
 		public readonly string Resource;
-		public string LockId { get; private set; }
+		public string LockId { get; }
 		public bool IsAcquired { get; private set; }
 		public int ExtendCount { get; private set; }
 		private readonly TimeSpan expiryTime;
@@ -111,7 +111,7 @@ namespace RedLock
 				cancellationToken);
 
 			redisLock.Start();
-
+			
 			return redisLock;
 		}
 
