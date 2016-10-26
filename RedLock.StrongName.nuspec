@@ -31,7 +31,7 @@
     <copyright>Copyright 2016 Sam Cook</copyright>
     <tags>RedLock Redis Distributed Lock</tags>
     <dependencies>
-      <dependency id="StackExchange.Redis.StrongName" version="1.1.603"/>
+      <dependency id="StackExchange.Redis.StrongName" version="1.1.608"/>
     </dependencies>
   </metadata>
   <files>
