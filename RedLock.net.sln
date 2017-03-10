@@ -1,10 +1,8 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.23107.0
+# Visual Studio 15
+VisualStudioVersion = 15.0.26430.15
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RedLock", "RedLock\RedLock.csproj", "{C76CF80D-15B7-440B-9AFB-5B450E1C969B}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{1DF05864-1C9B-442D-A425-0A14C0D5765B}"
 	ProjectSection(SolutionItems) = preProject
 		LICENSE = LICENSE
@@ -15,40 +13,50 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		RedLock.StrongName.snk = RedLock.StrongName.snk
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RedLock.Tests", "RedLock.Tests\RedLock.Tests.csproj", "{2DF8C6CF-482F-4C51-9BA0-1F7814CA91E0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RedLockNet.SERedis", "RedLockNet.SERedis\RedLockNet.SERedis.csproj", "{024849E0-03AF-4A6E-8CD5-D51EBB10ECB1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RedLock_Net40", "RedLock_Net40\RedLock_Net40.csproj", "{0FFA5029-E5AA-48E2-A915-FEAE3924CAB6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RedLockNet.Abstractions", "RedLockNet.Abstractions\RedLockNet.Abstractions.csproj", "{BB176C1F-C520-4FB9-99CA-2326F8FC6050}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RedLock.StrongName", "RedLock.StrongName\RedLock.StrongName.csproj", "{4988C554-74FC-415A-AEBB-808D788D7BA2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RedLockNet.Tests", "RedLockNet.Tests\RedLockNet.Tests.csproj", "{4F9D3DBD-28D0-45FB-8A83-DCB0EECB00CC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RedLock_Net40.StrongName", "RedLock_Net40.StrongName\RedLock_Net40.StrongName.csproj", "{A61A7710-3600-4498-A088-FE25955EECE9}"
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "RedLockNet.SERedis.Shared", "RedLockNet.SERedis.Shared\RedLockNet.SERedis.Shared.shproj", "{D6475C82-F51B-4DB6-8F13-B9BF449E52CF}"
+EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "RedLockNet.Abstractions.Shared", "RedLockNet.Abstractions.Shared\RedLockNet.Abstractions.Shared.shproj", "{C26C6723-06C4-4B2F-B35A-8FF514A9DB69}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RedLockNet.Abstractions.StrongName", "RedLockNet.Abstractions.StrongName\RedLockNet.Abstractions.StrongName.csproj", "{C21C9AAC-A2FF-40C3-A22C-CEBAFD0D03C6}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RedLockNet.SERedis.StrongName", "RedLockNet.SERedis.StrongName\RedLockNet.SERedis.StrongName.csproj", "{D348355C-446F-4DB9-9973-CDCCF504417F}"
 EndProject
 Global
+	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		RedLockNet.Abstractions.Shared\RedLockNet.Abstractions.Shared.projitems*{c26c6723-06c4-4b2f-b35a-8ff514a9db69}*SharedItemsImports = 13
+		RedLockNet.SERedis.Shared\RedLockNet.SERedis.Shared.projitems*{d6475c82-f51b-4db6-8f13-b9bf449e52cf}*SharedItemsImports = 13
+	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{C76CF80D-15B7-440B-9AFB-5B450E1C969B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{C76CF80D-15B7-440B-9AFB-5B450E1C969B}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{C76CF80D-15B7-440B-9AFB-5B450E1C969B}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{C76CF80D-15B7-440B-9AFB-5B450E1C969B}.Release|Any CPU.Build.0 = Release|Any CPU
-		{2DF8C6CF-482F-4C51-9BA0-1F7814CA91E0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{2DF8C6CF-482F-4C51-9BA0-1F7814CA91E0}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{2DF8C6CF-482F-4C51-9BA0-1F7814CA91E0}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{2DF8C6CF-482F-4C51-9BA0-1F7814CA91E0}.Release|Any CPU.Build.0 = Release|Any CPU
-		{0FFA5029-E5AA-48E2-A915-FEAE3924CAB6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{0FFA5029-E5AA-48E2-A915-FEAE3924CAB6}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{0FFA5029-E5AA-48E2-A915-FEAE3924CAB6}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{0FFA5029-E5AA-48E2-A915-FEAE3924CAB6}.Release|Any CPU.Build.0 = Release|Any CPU
-		{4988C554-74FC-415A-AEBB-808D788D7BA2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{4988C554-74FC-415A-AEBB-808D788D7BA2}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{4988C554-74FC-415A-AEBB-808D788D7BA2}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{4988C554-74FC-415A-AEBB-808D788D7BA2}.Release|Any CPU.Build.0 = Release|Any CPU
-		{A61A7710-3600-4498-A088-FE25955EECE9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{A61A7710-3600-4498-A088-FE25955EECE9}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{A61A7710-3600-4498-A088-FE25955EECE9}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{A61A7710-3600-4498-A088-FE25955EECE9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{024849E0-03AF-4A6E-8CD5-D51EBB10ECB1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{024849E0-03AF-4A6E-8CD5-D51EBB10ECB1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{024849E0-03AF-4A6E-8CD5-D51EBB10ECB1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{024849E0-03AF-4A6E-8CD5-D51EBB10ECB1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BB176C1F-C520-4FB9-99CA-2326F8FC6050}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BB176C1F-C520-4FB9-99CA-2326F8FC6050}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BB176C1F-C520-4FB9-99CA-2326F8FC6050}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BB176C1F-C520-4FB9-99CA-2326F8FC6050}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4F9D3DBD-28D0-45FB-8A83-DCB0EECB00CC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4F9D3DBD-28D0-45FB-8A83-DCB0EECB00CC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4F9D3DBD-28D0-45FB-8A83-DCB0EECB00CC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4F9D3DBD-28D0-45FB-8A83-DCB0EECB00CC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C21C9AAC-A2FF-40C3-A22C-CEBAFD0D03C6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C21C9AAC-A2FF-40C3-A22C-CEBAFD0D03C6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C21C9AAC-A2FF-40C3-A22C-CEBAFD0D03C6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C21C9AAC-A2FF-40C3-A22C-CEBAFD0D03C6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D348355C-446F-4DB9-9973-CDCCF504417F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D348355C-446F-4DB9-9973-CDCCF504417F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D348355C-446F-4DB9-9973-CDCCF504417F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D348355C-446F-4DB9-9973-CDCCF504417F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
