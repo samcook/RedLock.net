@@ -80,12 +80,12 @@ namespace RedLock
 
 				redisConnection.ConnectionMultiplexer.ConnectionFailed += (sender, args) =>
 				{
-					Logger.Debug(() => $"ConnectionFailed: {args.EndPoint.GetFriendlyName()} ConnectionType: {args.ConnectionType} FailureType: {args.FailureType}");
+					Logger.Warn(() => $"ConnectionFailed: {args.EndPoint.GetFriendlyName()} ConnectionType: {args.ConnectionType} FailureType: {args.FailureType}");
 				};
 
 				redisConnection.ConnectionMultiplexer.ConnectionRestored += (sender, args) =>
 				{
-					Logger.Debug(() => $"ConnectionRestored: {args.EndPoint.GetFriendlyName()} ConnectionType: {args.ConnectionType} FailureType: {args.FailureType}");
+					Logger.Warn(() => $"ConnectionRestored: {args.EndPoint.GetFriendlyName()} ConnectionType: {args.ConnectionType} FailureType: {args.FailureType}");
 				};
 
 				redisConnection.ConnectionMultiplexer.ConfigurationChanged += (sender, args) =>

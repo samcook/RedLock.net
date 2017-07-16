@@ -5,10 +5,13 @@ using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
-using log4net.Config;
+using NLog;
+using NLog.Config;
+using NLog.Targets;
 using NUnit.Framework;
 using RedLock.Logging;
 using RedLock.Util;
+using LogLevel = NLog.LogLevel;
 
 namespace RedLock.Tests
 {
@@ -20,7 +23,10 @@ namespace RedLock.Tests
 		[TestFixtureSetUp]
 		public void TestFixtureSetUp()
 		{
-			XmlConfigurator.Configure();
+			var loggingConfig = new LoggingConfiguration();
+			loggingConfig.AddTarget(new ColoredConsoleTarget("console"));
+			loggingConfig.AddRule(LogLevel.Debug, LogLevel.Fatal, "console");
+			LogManager.Configuration = loggingConfig;
 		}
 
 		// make sure redis is running on these
@@ -84,7 +90,7 @@ namespace RedLock.Tests
 			InactiveServer2,
 			InactiveServer3
 		};
-
+		
 		[Test]
 		public void TestSingleLock()
 		{
