@@ -47,7 +47,13 @@ namespace RedLock
 		/// Defaults to 100ms if not specified.
 		/// </summary>
 		public int? ConnectionTimeout { get; set; }
-		
+
+		/// <summary>
+		/// The sync timeout for the redis connection.
+		/// Defaults to 1000ms if not specified.
+		/// </summary>
+		public int? SyncTimeout { get; set; }
+
 		/// <summary>
 		/// The database to use with this redis connection.
 		/// Defaults to 0 if not specified.

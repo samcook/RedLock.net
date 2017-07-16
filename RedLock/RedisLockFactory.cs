@@ -15,6 +15,7 @@ namespace RedLock
 		private static readonly ILog Logger = LogProvider.GetCurrentClassLogger();
 
 		private const int DefaultConnectionTimeout = 100;
+		private const int DefaultSyncTimeout = 1000;
 		private const int DefaultRedisDatabase = 0;
 		private const int DefaultConfigCheckSeconds = 10;
 		private readonly IList<RedisConnection> redisCaches;
@@ -59,6 +60,7 @@ namespace RedLock
 				{
 					AbortOnConnectFail = false,
 					ConnectTimeout = endPoint.ConnectionTimeout ?? DefaultConnectionTimeout,
+					SyncTimeout = endPoint.SyncTimeout ?? DefaultSyncTimeout,
 					Ssl = endPoint.Ssl,
 					Password = endPoint.Password,
 					ConfigCheckSeconds = endPoint.ConfigCheckSeconds ?? DefaultConfigCheckSeconds
