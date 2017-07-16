@@ -2,7 +2,7 @@
 <package>
   <metadata>
     <id>RedLock.net.StrongName</id>
-    <version>1.7.4</version>
+    <version>1.7.5</version>
     <title>RedLock.net (Strong Named)</title>
     <authors>Sam Cook</authors>
     <owners>Sam Cook</owners>
@@ -12,6 +12,7 @@
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>An implementation of the Redlock distributed lock algorithm</description>
     <releaseNotes>
+1.7.5 - Add SyncTimeout config option, alter logging output
 1.7.4 - Add IRedisLock and IRedisLockFactory interfaces
 1.7.3 - Add support for connecting to replicated Redis instances
 1.7.2 - Sanity checks on input values
