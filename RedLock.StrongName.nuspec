@@ -37,9 +37,9 @@
 	<files>
 		<file src="RedLockNet.SERedis.StrongName\bin\Release\net45\RedLockNet.SERedis.StrongName.dll" target="lib\net45" />
 		<file src="RedLockNet.Abstractions.StrongName\bin\Release\netstandard1.1\RedLockNet.Abstractions.StrongName.dll" target="lib\net45" />
-		<file src="RedLockNet.SERedis.StrongName\bin\Release\net45\RedLockNet.SERedis.StrongName.dll" target="lib\net46" />
+		<file src="RedLockNet.SERedis.StrongName\bin\Release\net46\RedLockNet.SERedis.StrongName.dll" target="lib\net46" />
 		<file src="RedLockNet.Abstractions.StrongName\bin\Release\netstandard1.1\RedLockNet.Abstractions.StrongName.dll" target="lib\net46" />
-		<file src="RedLockNet.SERedis.StrongName\bin\Release\net45\RedLockNet.SERedis.StrongName.dll" target="lib\netstandard1.5" />
+		<file src="RedLockNet.SERedis.StrongName\bin\Release\netstandard1.5\RedLockNet.SERedis.StrongName.dll" target="lib\netstandard1.5" />
 		<file src="RedLockNet.Abstractions.StrongName\bin\Release\netstandard1.1\RedLockNet.Abstractions.StrongName.dll" target="lib\netstandard1.5" />
 	</files>
 </package>
