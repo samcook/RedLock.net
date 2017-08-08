@@ -1,0 +1,22 @@
+version: 1.0.{build}
+skip_tags: true
+configuration: Release
+cache: packages -> **\packages.config
+before_build:
+- cmd: nuget restore
+build:
+  verbosity: normal
+after_build:
+- cmd: >-
+    nuget pack RedLock.nuspec
+
+    nuget pack RedLock.StrongName.nuspec
+before_test:
+- ps: >-
+    cd RedLock.Tests\RedisConfig
+
+    Start-Process run-all-servers.cmd
+
+    Start-Sleep 5
+artifacts:
+- path: '*.nupkg'
