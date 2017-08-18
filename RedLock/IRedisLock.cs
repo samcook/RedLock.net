@@ -7,5 +7,6 @@ namespace RedLock
 		string LockId { get; }
 		bool IsAcquired { get; }
 		int ExtendCount { get; }
-	}
+        System.Collections.Generic.IEnumerable<Exception> ThrownExceptions { get; }
+    }
 }

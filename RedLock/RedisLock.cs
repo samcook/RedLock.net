@@ -59,6 +59,10 @@ namespace RedLock
 		private readonly TimeSpan minimumExpiryTime = TimeSpan.FromMilliseconds(10);
 		private readonly TimeSpan minimumRetryTime = TimeSpan.FromMilliseconds(10);
 
+        private List<Exception> thrownExceptions;
+        public IEnumerable<Exception> ThrownExceptions { get { return thrownExceptions ?? Enumerable.Empty<Exception>(); } }
+        private readonly object thrownExceptionsLock = new object();
+
 		private RedisLock(
 			ICollection<RedisConnection> redisCaches,
 			string resource,
@@ -408,6 +412,7 @@ namespace RedLock
 			catch (Exception ex)
 			{
 				Logger.Debug($"Error locking lock instance {host}: {ex.Message}");
+                RecordException(ex);
 			}
 
 			Logger.Trace(() => $"LockInstance exit {host}: {redisKey}, {LockId}, {result}");
@@ -433,7 +438,8 @@ namespace RedLock
 			catch (Exception ex)
 			{
 				Logger.Debug($"Error locking lock instance {host}: {ex.Message}");
-			}
+                RecordException(ex);
+            }
 
 			Logger.Trace(() => $"LockInstanceAsync exit {host}: {redisKey}, {LockId}, {result}");
 
@@ -459,7 +465,8 @@ namespace RedLock
 			catch (Exception ex)
 			{
 				Logger.Debug($"Error extending lock instance {host}: {ex.Message}");
-			}
+                RecordException(ex);
+            }
 
 			Logger.Trace(() => $"ExtendInstance exit {host}: {redisKey}, {LockId}, {result}");
 
@@ -483,7 +490,8 @@ namespace RedLock
 			catch (Exception ex)
 			{
 				Logger.Debug($"Error unlocking lock instance {host}: {ex.Message}");
-			}
+                RecordException(ex);
+            }
 
 			Logger.Trace(() => $"UnlockInstance exit {host}: {redisKey}, {LockId}, {result}");
 
@@ -508,12 +516,23 @@ namespace RedLock
 			catch (Exception ex)
 			{
 				Logger.Debug($"Error unlocking lock instance {host}: {ex.Message}");
-			}
+                RecordException(ex);
+            }
 
 			Logger.Trace(() => $"UnlockInstanceAsync exit {host}: {redisKey}, {LockId}, {result}");
 
 			return result;
 		}
+
+        private void RecordException(Exception ex)
+        {
+            lock(thrownExceptionsLock)
+            {
+                if (thrownExceptions == null)
+                    thrownExceptions = new List<Exception>();
+                thrownExceptions.Add(ex);
+            }
+        }
 
 		private static string GetRedisKey(string redisKeyFormat, string resource)
 		{
