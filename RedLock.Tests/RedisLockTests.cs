@@ -466,5 +466,19 @@ namespace RedLock.Tests
 				}
 			}
 		}
+
+        [Test]
+        public void TestThrownExceptions()
+        {
+            using (var redisLockFactory = new RedisLockFactory(AllInactiveEndPoints.First()))
+            {
+                var resource = $"testredislock-{Guid.NewGuid()}";
+
+                using (var redisLock = redisLockFactory.Create(resource, TimeSpan.MaxValue))
+                {
+                    Assert.IsTrue(redisLock.HasError());
+                }
+            }
+        }
 	}
 }

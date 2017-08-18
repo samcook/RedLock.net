@@ -47,6 +47,7 @@
   <ItemGroup>
     <Compile Include="App_Packages\LibLog.4.2\LibLog.cs" />
     <Compile Include="IRedisLock.cs" />
+    <Compile Include="IRedisLockExtensions.cs" />
     <Compile Include="IRedisLockFactory.cs" />
     <Compile Include="RedisConnection.cs" />
     <Compile Include="RedisLockEndPoint.cs" />
