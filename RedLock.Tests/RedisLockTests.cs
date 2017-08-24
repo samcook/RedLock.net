@@ -102,7 +102,7 @@ namespace RedLock.Tests
 		{
 			using (var redisLockFactory = new RedisLockFactory(AllActiveEndPoints))
 			{
-				var resource = $"testredislock-{Guid.NewGuid()}";
+				var resource = $"testredislock:{Guid.NewGuid()}";
 
 				using (var firstLock = redisLockFactory.Create(resource, TimeSpan.FromSeconds(30)))
 				{
@@ -130,7 +130,7 @@ namespace RedLock.Tests
 		{
 			using (var redisLockFactory = new RedisLockFactory(AllActiveEndPoints))
 			{
-				var resource = $"testredislock-{Guid.NewGuid()}";
+				var resource = $"testredislock:{Guid.NewGuid()}";
 
 				using (var firstLock = await redisLockFactory.CreateAsync(resource, TimeSpan.FromSeconds(30)))
 				{
@@ -195,7 +195,7 @@ namespace RedLock.Tests
 		{
 			using (var redisLockFactory = new RedisLockFactory(AllActiveEndPoints))
 			{
-				var resource = $"testredislock-{Guid.NewGuid()}";
+				var resource = $"testredislock:{Guid.NewGuid()}";
 
 				using (var firstLock = redisLockFactory.Create(resource, TimeSpan.FromSeconds(30)))
 				{
@@ -283,7 +283,7 @@ namespace RedLock.Tests
 		{
 			var locksAcquired = 0;
 
-			var lockKey = $"testredislock-{ThreadSafeRandom.Next(10000)}";
+			var lockKey = $"testredislock:{ThreadSafeRandom.Next(10000)}";
 
 			var tasks = new List<Task>();
 
@@ -371,7 +371,7 @@ namespace RedLock.Tests
 		{
 			using (var redisLockFactory = new RedisLockFactory(endPoints))
 			{
-				var resource = $"testredislock-{Guid.NewGuid()}";
+				var resource = $"testredislock:{Guid.NewGuid()}";
 
 				using (var redisLock = redisLockFactory.Create(resource, TimeSpan.FromSeconds(30)))
 				{
@@ -390,7 +390,7 @@ namespace RedLock.Tests
 		{
 			var cts = new CancellationTokenSource();
 
-			var resource = $"testredislock-{Guid.NewGuid()}";
+			var resource = $"testredislock:{Guid.NewGuid()}";
 
 			using (var redisLockFactory = new RedisLockFactory(AllActiveEndPoints))
 			{
@@ -445,7 +445,7 @@ namespace RedLock.Tests
 		{
 			using (var redisLockFactory = new RedisLockFactory(AllActiveEndPoints))
 			{
-				var resource = $"testredislock-{Guid.NewGuid()}";
+				var resource = $"testredislock:{Guid.NewGuid()}";
 
 				for (var i = 0; i < 10; i++)
 				{
