@@ -54,7 +54,7 @@ namespace RedLock
 		private readonly TimeSpan? retryTime;
 		private readonly CancellationToken cancellationToken;
 
-		public const string DefaultRedisKeyFormat = "redlock-{0}";
+		public const string DefaultRedisKeyFormat = "redlock:{0}";
 
 		private readonly TimeSpan minimumExpiryTime = TimeSpan.FromMilliseconds(10);
 		private readonly TimeSpan minimumRetryTime = TimeSpan.FromMilliseconds(10);
