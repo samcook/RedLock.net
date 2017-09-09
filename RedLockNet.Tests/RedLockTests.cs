@@ -103,7 +103,7 @@ namespace RedLockNet.Tests
 		{
 			using (var redisLockFactory = RedLockFactory.Create(AllActiveEndPoints, loggerFactory))
 			{
-				var resource = $"testredislock-{Guid.NewGuid()}";
+				var resource = $"testredislock:{Guid.NewGuid()}";
 
 				using (var firstLock = redisLockFactory.CreateLock(resource, TimeSpan.FromSeconds(30)))
 				{
@@ -131,7 +131,7 @@ namespace RedLockNet.Tests
 		{
 			using (var redisLockFactory = RedLockFactory.Create(AllActiveEndPoints, loggerFactory))
 			{
-				var resource = $"testredislock-{Guid.NewGuid()}";
+				var resource = $"testredislock:{Guid.NewGuid()}";
 
 				using (var firstLock = await redisLockFactory.CreateLockAsync(resource, TimeSpan.FromSeconds(30)))
 				{
@@ -152,7 +152,7 @@ namespace RedLockNet.Tests
 			
 			using (var redisLockFactory = RedLockFactory.Create(AllActiveEndPoints, loggerFactory))
 			{
-				var resource = $"testblockingconcurrentlocks-{Guid.NewGuid()}";
+				var resource = $"testblockingconcurrentlocks:{Guid.NewGuid()}";
 
 				var threads = new List<Thread>();
 
@@ -196,7 +196,7 @@ namespace RedLockNet.Tests
 		{
 			using (var redisLockFactory = RedLockFactory.Create(AllActiveEndPoints, loggerFactory))
 			{
-				var resource = $"testredislock-{Guid.NewGuid()}";
+				var resource = $"testredislock:{Guid.NewGuid()}";
 
 				using (var firstLock = redisLockFactory.CreateLock(resource, TimeSpan.FromSeconds(30)))
 				{
@@ -215,7 +215,7 @@ namespace RedLockNet.Tests
 		{
 			using (var redisLockFactory = RedLockFactory.Create(AllActiveEndPoints, loggerFactory))
 			{
-				var resource = $"testrenewinglock-{Guid.NewGuid()}";
+				var resource = $"testrenewinglock:{Guid.NewGuid()}";
 
 				int extendCount;
 
@@ -237,7 +237,7 @@ namespace RedLockNet.Tests
 		{
 			using (var lockFactory = RedLockFactory.Create(AllActiveEndPoints, loggerFactory))
 			{
-				var resource = $"testrenewinglock-{Guid.NewGuid()}";
+				var resource = $"testrenewinglock:{Guid.NewGuid()}";
 
 				using (var firstLock = lockFactory.CreateLock(resource, TimeSpan.FromSeconds(1)))
 				{
@@ -292,7 +292,7 @@ namespace RedLockNet.Tests
 		{
 			var locksAcquired = 0;
 
-			var lockKey = $"testredislock-{ThreadSafeRandom.Next(10000)}";
+			var lockKey = $"testredislock:{ThreadSafeRandom.Next(10000)}";
 
 			var tasks = new List<Task>();
 
@@ -388,7 +388,7 @@ namespace RedLockNet.Tests
 		{
 			using (var redisLockFactory = factoryBuilder())
 			{
-				var resource = $"testredislock-{Guid.NewGuid()}";
+				var resource = $"testredislock:{Guid.NewGuid()}";
 
 				using (var redisLock = redisLockFactory.CreateLock(resource, TimeSpan.FromSeconds(30)))
 				{
@@ -402,7 +402,7 @@ namespace RedLockNet.Tests
 		{
 			var cts = new CancellationTokenSource();
 
-			var resource = $"testredislock-{Guid.NewGuid()}";
+			var resource = $"testredislock:{Guid.NewGuid()}";
 
 			using (var redisLockFactory = RedLockFactory.Create(AllActiveEndPoints, loggerFactory))
 			{
@@ -472,7 +472,7 @@ namespace RedLockNet.Tests
 		{
 			using (var redisLockFactory = RedLockFactory.Create(AllActiveEndPoints, loggerFactory))
 			{
-				var resource = $"testredislock-{Guid.NewGuid()}";
+				var resource = $"testredislock:{Guid.NewGuid()}";
 
 				for (var i = 0; i < 10; i++)
 				{

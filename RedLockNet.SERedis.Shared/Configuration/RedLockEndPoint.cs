@@ -86,7 +86,7 @@ namespace RedLockNet.SERedis.Configuration
 
 		/// <summary>
 		/// The string format for keys created in redis, must include {0}.
-		/// Defaults to "redlock-{0}" if not specified.
+		/// Defaults to "redlock:{0}" if not specified.
 		/// </summary>
 		public string RedisKeyFormat { get; set; }
 
