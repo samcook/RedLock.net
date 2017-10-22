@@ -1,7 +1,10 @@
-version: 1.0.{build}
+version: 2.0.{build}
 skip_tags: true
+image: Visual Studio 2017
 configuration: Release
 cache: packages -> **\packages.config
+environment:
+  REDIS_PATH: C:\Users\appveyor\.nuget\packages\redis-64\3.0.503\tools
 before_build:
 - cmd: nuget restore
 build:
@@ -13,7 +16,7 @@ after_build:
     nuget pack RedLock.StrongName.nuspec
 before_test:
 - ps: >-
-    cd RedLock.Tests\RedisConfig
+    cd RedLockNet.Tests\RedisConfig
 
     Start-Process run-all-servers.cmd
 
