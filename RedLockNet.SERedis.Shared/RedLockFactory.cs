@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using RedLockNet.SERedis.Configuration;
+using RedLockNet.SERedis.Events;
 using RedLockNet.SERedis.Internal;
 
 namespace RedLockNet.SERedis
@@ -13,6 +15,8 @@ namespace RedLockNet.SERedis
 		private readonly RedLockConfiguration configuration;
 		private readonly ILoggerFactory loggerFactory;
 		private readonly ICollection<RedisConnection> redisCaches;
+
+		public event EventHandler<RedLockConfigurationChangedEventArgs> ConfigurationChanged;
 
 		/// <summary>
 		/// Create a RedLockFactory using a list of RedLockEndPoints (ConnectionMultiplexers will be internally managed by RedLock.net)
@@ -46,6 +50,29 @@ namespace RedLockNet.SERedis
 			this.configuration = configuration ?? throw new ArgumentNullException(nameof(configuration), "Configuration must not be null");
 			this.loggerFactory = configuration.LoggerFactory ?? new LoggerFactory();
 			this.redisCaches = configuration.ConnectionProvider.CreateRedisConnections();
+
+			SubscribeToConnectionEvents();
+		}
+
+		private void SubscribeToConnectionEvents()
+		{
+			foreach (var cache in this.redisCaches)
+			{
+				cache.ConnectionMultiplexer.ConfigurationChanged += MultiplexerConfigurationChanged;
+			}
+		}
+
+		private void UnsubscribeFromConnectionEvents()
+		{
+			foreach (var cache in this.redisCaches)
+			{
+				cache.ConnectionMultiplexer.ConfigurationChanged -= MultiplexerConfigurationChanged;
+			}
+		}
+
+		private void MultiplexerConfigurationChanged(object sender, StackExchange.Redis.EndPointEventArgs args)
+		{
+			RaiseConfigurationChanged();
 		}
 
 		public IRedLock CreateLock(string resource, TimeSpan expiryTime)
@@ -92,7 +119,35 @@ namespace RedLockNet.SERedis
 
 		public void Dispose()
 		{
+			UnsubscribeFromConnectionEvents();
+
 			this.configuration.ConnectionProvider.DisposeConnections();
+		}
+
+		protected virtual void RaiseConfigurationChanged()
+		{
+			if (ConfigurationChanged == null)
+			{
+				return;
+			}
+
+			var connections = new List<Dictionary<EndPoint, RedLockConfigurationChangedEventArgs.RedLockEndPointStatus>>();
+
+			foreach (var cache in this.redisCaches)
+			{
+				var endPointStatuses = new Dictionary<EndPoint, RedLockConfigurationChangedEventArgs.RedLockEndPointStatus>();
+
+				foreach (var endPoint in cache.ConnectionMultiplexer.GetEndPoints())
+				{
+					var server = cache.ConnectionMultiplexer.GetServer(endPoint);
+
+					endPointStatuses.Add(endPoint, new RedLockConfigurationChangedEventArgs.RedLockEndPointStatus(endPoint, server.IsConnected, server.IsSlave));
+				}
+
+				connections.Add(endPointStatuses);
+			}
+
+			ConfigurationChanged?.Invoke(this, new RedLockConfigurationChangedEventArgs(connections));
 		}
 	}
 }

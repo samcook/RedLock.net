@@ -16,6 +16,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Configuration\RedLockConnectionProvider.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Configuration\RedLockEndPoint.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Configuration\RedLockMultiplexer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Events\RedLockConfigurationChangedEventArgs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Internal\RedisConnection.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RedLock.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RedLockFactory.cs" />
