@@ -18,7 +18,7 @@ namespace RedLockNet.SERedis.Configuration
 
 		/// <summary>
 		/// The database to use with this redis connection.
-		/// Defaults to 0 if not specified.
+		/// Defaults to the ConnectionMultiplexer's default database if not specified.
 		/// </summary>
 		public int? RedisDatabase { get; set; }
 

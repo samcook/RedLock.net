@@ -8,7 +8,7 @@ namespace RedLockNet.SERedis.Configuration
 		internal abstract ICollection<RedisConnection> CreateRedisConnections();
 		internal abstract void DisposeConnections();
 
-		protected const int DefaultRedisDatabase = 0;
+		protected const int DefaultRedisDatabase = -1;
 		protected const string DefaultRedisKeyFormat = "redlock:{0}";
 	}
 }
