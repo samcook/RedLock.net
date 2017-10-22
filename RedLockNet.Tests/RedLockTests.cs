@@ -98,7 +98,7 @@ namespace RedLockNet.Tests
 		{
 			CheckSingleRedisLock(
 				() => RedLockFactory.Create(SomeActiveEndPointsWithQuorum, loggerFactory),
-				true);
+				RedLockStatus.Acquired);
 		}
 
 		[Test]
@@ -115,6 +115,7 @@ namespace RedLockNet.Tests
 					using (var secondLock = redisLockFactory.CreateLock(resource, TimeSpan.FromSeconds(30)))
 					{
 						Assert.That(secondLock.IsAcquired, Is.False);
+						Assert.That(secondLock.Status, Is.EqualTo(RedLockStatus.Conflicted));
 					}
 				}
 			}
@@ -143,6 +144,7 @@ namespace RedLockNet.Tests
 					using (var secondLock = await redisLockFactory.CreateLockAsync(resource, TimeSpan.FromSeconds(30)))
 					{
 						Assert.That(secondLock.IsAcquired, Is.False);
+						Assert.That(secondLock.Status, Is.EqualTo(RedLockStatus.Conflicted));
 					}
 				}
 			}
@@ -264,19 +266,19 @@ namespace RedLockNet.Tests
 			logger.LogInformation("======== Testing quorum with all active endpoints ========");
 			CheckSingleRedisLock(
 				() => RedLockFactory.Create(AllActiveEndPoints, loggerFactory),
-				true);
+				RedLockStatus.Acquired);
 			logger.LogInformation("======== Testing quorum with no active endpoints ========");
 			CheckSingleRedisLock(
 				() => RedLockFactory.Create(AllInactiveEndPoints, loggerFactory),
-				false);
+				RedLockStatus.NoQuorum);
 			logger.LogInformation("======== Testing quorum with enough active endpoints ========");
 			CheckSingleRedisLock(
 				() => RedLockFactory.Create(SomeActiveEndPointsWithQuorum, loggerFactory),
-				true);
+				RedLockStatus.Acquired);
 			logger.LogInformation("======== Testing quorum with not enough active endpoints ========");
 			CheckSingleRedisLock(
 				() => RedLockFactory.Create(SomeActiveEndPointsWithNoQuorum, loggerFactory),
-				false);
+				RedLockStatus.NoQuorum);
 		}
 
 		[Test]
@@ -353,7 +355,7 @@ namespace RedLockNet.Tests
 		{
 			CheckSingleRedisLock(
 				() => RedLockFactory.Create(new List<RedLockEndPoint> { PasswordedServer }, loggerFactory),
-				true);
+				RedLockStatus.Acquired);
 		}
 
 		[Test]
@@ -368,7 +370,7 @@ namespace RedLockNet.Tests
 
 			CheckSingleRedisLock(
 				() => RedLockFactory.Create(new List<RedLockEndPoint> { endPoint }, loggerFactory),
-				true);
+				RedLockStatus.Acquired);
 		}
 
 		[Test]
@@ -376,7 +378,7 @@ namespace RedLockNet.Tests
 		{
 			CheckSingleRedisLock(
 				() => RedLockFactory.Create(new List<RedLockEndPoint> { NonDefaultDatabaseServer }, loggerFactory),
-				true);
+				RedLockStatus.Acquired);
 		}
 
 		[Test]
@@ -384,10 +386,10 @@ namespace RedLockNet.Tests
 		{
 			CheckSingleRedisLock(
 				() => RedLockFactory.Create(new List<RedLockEndPoint> {NonDefaultRedisKeyFormatServer}, loggerFactory),
-				true);
+				RedLockStatus.Acquired);
 		}
 
-		private static void CheckSingleRedisLock([InstantHandle]Func<RedLockFactory> factoryBuilder, bool expectedToAcquire)
+		private static void CheckSingleRedisLock([InstantHandle]Func<RedLockFactory> factoryBuilder, RedLockStatus expectedStatus)
 		{
 			using (var redisLockFactory = factoryBuilder())
 			{
@@ -395,7 +397,8 @@ namespace RedLockNet.Tests
 
 				using (var redisLock = redisLockFactory.CreateLock(resource, TimeSpan.FromSeconds(30)))
 				{
-					Assert.That(redisLock.IsAcquired, Is.EqualTo(expectedToAcquire));
+					Assert.That(redisLock.IsAcquired, Is.EqualTo(expectedStatus == RedLockStatus.Acquired));
+					Assert.That(redisLock.Status, Is.EqualTo(expectedStatus));
 				}
 			}
 		}
@@ -465,27 +468,43 @@ namespace RedLockNet.Tests
 			{
 				CheckSingleRedisLock(
 					() => RedLockFactory.Create(new List<RedLockMultiplexer> {connectionMultiplexer}, loggerFactory),
-					true);
+					RedLockStatus.Acquired);
 			}
 		}
 
 		[Test]
 		[Ignore("Timing test")]
-		public void TimeLock()
+		public async Task TimeLock()
 		{
 			using (var redisLockFactory = RedLockFactory.Create(AllActiveEndPoints, loggerFactory))
 			{
 				var resource = $"testredislock:{Guid.NewGuid()}";
 
+				// warmup
 				for (var i = 0; i < 10; i++)
 				{
-					var sw = Stopwatch.StartNew();
+					using (await redisLockFactory.CreateLockAsync(resource, TimeSpan.FromSeconds(30)))
+					{
+					}
+				}
 
-					using (var redisLock = redisLockFactory.CreateLock(resource, TimeSpan.FromSeconds(30)))
+				var sw = new Stopwatch();
+				var totalAcquire = new TimeSpan();
+				var totalRelease = new TimeSpan();
+				var iterations = 10000;
+
+				for (var i = 0; i < iterations; i++)
+				{
+					sw.Restart();
+
+					using (var redisLock = await redisLockFactory.CreateLockAsync(resource, TimeSpan.FromSeconds(30)))
 					{
 						sw.Stop();
 
-						logger.LogInformation($"Acquire {i} took {sw.ElapsedTicks} ticks, success {redisLock.IsAcquired}");
+						Assert.That(redisLock.IsAcquired, Is.True);
+
+						logger.LogInformation($"Acquire {i} took {sw.ElapsedTicks} ticks, status: {redisLock.Status}");
+						totalAcquire += sw.Elapsed;
 
 						sw.Restart();
 					}
@@ -493,7 +512,10 @@ namespace RedLockNet.Tests
 					sw.Stop();
 
 					logger.LogInformation($"Release {i} took {sw.ElapsedTicks} ticks, success");
+					totalRelease += sw.Elapsed;
 				}
+
+				logger.LogWarning($"{iterations} iterations, total acquire time: {totalAcquire}, total release time {totalRelease}");
 			}
 		}
 	}
