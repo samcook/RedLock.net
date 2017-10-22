@@ -1,13 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <VersionPrefix>1.8.0</VersionPrefix>
     <TargetFrameworks>net45;net46;netstandard1.5</TargetFrameworks>
     <AssemblyName>RedLockNet.SERedis.StrongName</AssemblyName>
     <PackageId>RedLock.net</PackageId>
     <NetStandardImplicitPackageVersion>1.6.1</NetStandardImplicitPackageVersion>
     <RootNamespace>RedLockNet.SERedis</RootNamespace>
-    <Version>2.0.0-pre1</Version>
+    <Version>2.0.0-pre2</Version>
     <Description>An implementation of the Redlock distributed lock algorithm</Description>
     <Authors>Sam Cook</Authors>
     <Company />
@@ -19,7 +18,7 @@
     <RepositoryUrl>https://github.com/samcook/RedLock.net</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageTags>RedLock Redis Distributed Lock</PackageTags>
-    <PackageReleaseNotes>2.0.0-pre1 - .NET Core release</PackageReleaseNotes>
+    <PackageReleaseNotes>2.0.0-pre2 - .NET Core release</PackageReleaseNotes>
     <GeneratePackageOnBuild>False</GeneratePackageOnBuild>
 	  <SignAssembly>True</SignAssembly>
 	  <AssemblyOriginatorKeyFile>..\RedLock.StrongName.snk</AssemblyOriginatorKeyFile>
