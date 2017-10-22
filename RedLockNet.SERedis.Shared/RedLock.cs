@@ -33,7 +33,7 @@ namespace RedLockNet.SERedis
 		// Returns 1 on success, 0 on failure setting expiry or key not existing, -1 if the key value didn't match
 		private static readonly string ExtendIfMatchingValueScript = EmbeddedResourceLoader.GetEmbeddedResource("RedLockNet.SERedis.Lua.Extend.lua");
 
-		public readonly string Resource;
+		public string Resource { get; }
 		public string LockId { get; }
 		public bool IsAcquired { get; private set; }
 		public int ExtendCount { get; private set; }
