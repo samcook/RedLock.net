@@ -6,10 +6,12 @@
     <SharedGUID>c26c6723-06c4-4b2f-b35a-8ff514a9db69</SharedGUID>
   </PropertyGroup>
   <PropertyGroup Label="Configuration">
-    <Import_RootNamespace>RedLockNet.Abstractions</Import_RootNamespace>
+    <Import_RootNamespace>RedLockNet</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)IDistributedLockFactory.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IRedLock.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)RedLockInstanceSummary.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)RedLockStatus.cs" />
   </ItemGroup>
 </Project>

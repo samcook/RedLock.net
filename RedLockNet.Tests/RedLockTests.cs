@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Net;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
@@ -23,6 +24,8 @@ namespace RedLockNet.Tests
 		[OneTimeSetUp]
 		public void OneTimeSetUp()
 		{
+			ThreadPool.SetMinThreads(100, 100);
+
 			loggerFactory = new LoggerFactory().AddConsole(LogLevel.Debug);
 			logger = loggerFactory.CreateLogger<RedLockTests>();
 		}

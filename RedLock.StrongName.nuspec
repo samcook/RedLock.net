@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
 	<metadata>
 		<id>RedLock.net.StrongName</id>
-		<version>2.0.0-pre2</version>
+		<version>2.0.0-pre3</version>
 		<title>RedLock.net (Strong Named)</title>
 		<authors>Sam Cook</authors>
 		<owners>Sam Cook</owners>
@@ -11,7 +11,7 @@
 		<iconUrl>https://raw.githubusercontent.com/samcook/RedLock.net/master/redlock-icon.png</iconUrl>
 		<requireLicenseAcceptance>false</requireLicenseAcceptance>
 		<description>An implementation of the Redlock distributed lock algorithm</description>
-		<releaseNotes>2.0.0-pre2 - .NET Core release</releaseNotes>
+		<releaseNotes>2.0.0-pre3 - .NET Core release</releaseNotes>
 		<copyright>Copyright 2017 Sam Cook</copyright>
 		<tags>RedLock Redis Distributed Lock</tags>
 		<dependencies>
@@ -21,16 +21,20 @@
 				<dependency id="NETStandard.Library" version="1.6.1" exclude="Build,Analyzers" />
 				<dependency id="Microsoft.Extensions.Logging" version="1.1.1" exclude="Build,Analyzers" />
 				<dependency id="System.Threading.Tasks.Parallel" version="4.3.0" exclude="Build,Analyzers" />
+				<dependency id="System.Linq.Parallel" version="4.3.0" exclude="Build,Analyzers" />
+				<dependency id="System.ValueTuple" version="4.4.0" exclude="Build,Analyzers" />
 			</group>
 			<group targetFramework=".NETFramework4.6">
 				<dependency id="Microsoft.Extensions.Logging.Abstractions" version="1.1.1" exclude="Build,Analyzers" />
 				<dependency id="StackExchange.Redis.StrongName" version="1.1.608" exclude="Build,Analyzers" />
 				<dependency id="Microsoft.Extensions.Logging" version="1.1.1" exclude="Build,Analyzers" />
+				<dependency id="System.ValueTuple" version="4.4.0" exclude="Build,Analyzers" />
 			</group>
 			<group targetFramework=".NETFramework4.5">
 				<dependency id="Microsoft.Extensions.Logging.Abstractions" version="1.1.1" exclude="Build,Analyzers" />
 				<dependency id="StackExchange.Redis.StrongName" version="1.1.608" exclude="Build,Analyzers" />
 				<dependency id="Microsoft.Extensions.Logging" version="1.1.1" exclude="Build,Analyzers" />
+				<dependency id="System.ValueTuple" version="4.4.0" exclude="Build,Analyzers" />
 			</group>
 		</dependencies>
 	</metadata>

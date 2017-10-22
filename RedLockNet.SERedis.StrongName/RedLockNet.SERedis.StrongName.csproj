@@ -4,9 +4,8 @@
     <TargetFrameworks>net45;net46;netstandard1.5</TargetFrameworks>
     <AssemblyName>RedLockNet.SERedis.StrongName</AssemblyName>
     <PackageId>RedLock.net</PackageId>
-    <NetStandardImplicitPackageVersion>1.6.1</NetStandardImplicitPackageVersion>
     <RootNamespace>RedLockNet.SERedis</RootNamespace>
-    <Version>2.0.0-pre2</Version>
+    <Version>2.0.0-pre3</Version>
     <Description>An implementation of the Redlock distributed lock algorithm</Description>
     <Authors>Sam Cook</Authors>
     <Company />
@@ -18,7 +17,7 @@
     <RepositoryUrl>https://github.com/samcook/RedLock.net</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageTags>RedLock Redis Distributed Lock</PackageTags>
-    <PackageReleaseNotes>2.0.0-pre2 - .NET Core release</PackageReleaseNotes>
+    <PackageReleaseNotes>2.0.0-pre3 - .NET Core release</PackageReleaseNotes>
     <GeneratePackageOnBuild>False</GeneratePackageOnBuild>
 	  <SignAssembly>True</SignAssembly>
 	  <AssemblyOriginatorKeyFile>..\RedLock.StrongName.snk</AssemblyOriginatorKeyFile>
@@ -28,7 +27,8 @@
   <ItemGroup>
     <PackageReference Include="StackExchange.Redis.StrongName" Version="1.1.608" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="1.1.1" />
-    <PackageReference Include="Microsoft.Extensions.Logging" Version="1.1.1" />
+		<PackageReference Include="Microsoft.Extensions.Logging" Version="1.1.1" />
+		<PackageReference Include="System.ValueTuple" Version="4.4.0" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net45' ">
@@ -42,7 +42,8 @@
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.5' ">
-    <PackageReference Include="System.Threading.Tasks.Parallel" Version="4.3.0" />
+		<PackageReference Include="System.Threading.Tasks.Parallel" Version="4.3.0" />
+		<PackageReference Include="System.Linq.Parallel" Version="4.3.0" />
   </ItemGroup>
 
   <ItemGroup>

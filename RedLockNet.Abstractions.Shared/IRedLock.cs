@@ -20,6 +20,16 @@ namespace RedLockNet
 		bool IsAcquired { get; }
 
 		/// <summary>
+		/// The status of the lock.
+		/// </summary>
+		RedLockStatus Status { get; }
+
+		/// <summary>
+		/// Details of the number of instances the lock was able to be acquired in.
+		/// </summary>
+		RedLockInstanceSummary InstanceSummary { get; }
+
+		/// <summary>
 		/// The number of times the lock has been extended.
 		/// </summary>
 		int ExtendCount { get; }

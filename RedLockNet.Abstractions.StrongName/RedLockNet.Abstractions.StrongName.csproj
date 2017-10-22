@@ -4,7 +4,7 @@
     <TargetFramework>netstandard1.1</TargetFramework>
     <RootNamespace>RedLockNet</RootNamespace>
     <GeneratePackageOnBuild>False</GeneratePackageOnBuild>
-    <Version>2.0.0-pre2</Version>
+    <Version>2.0.0-pre3</Version>
     <Authors>Sam Cook</Authors>
     <Company />
     <Product>RedLock.net</Product>
@@ -17,7 +17,7 @@
     <PackageIconUrl>https://raw.githubusercontent.com/samcook/RedLock.net/master/redlock-icon.png</PackageIconUrl>
     <RepositoryType>git</RepositoryType>
     <PackageTags>RedLock Redis Distributed Lock</PackageTags>
-    <PackageReleaseNotes>2.0.0-pre2 - .NET Core release</PackageReleaseNotes>
+    <PackageReleaseNotes>2.0.0-pre3 - .NET Core release</PackageReleaseNotes>
     <AssemblyName>RedLockNet.Abstractions.StrongName</AssemblyName>
     <SignAssembly>True</SignAssembly>
     <AssemblyOriginatorKeyFile>..\RedLock.StrongName.snk</AssemblyOriginatorKeyFile>

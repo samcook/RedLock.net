@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -35,8 +36,11 @@ namespace RedLockNet.SERedis
 
 		public string Resource { get; }
 		public string LockId { get; }
-		public bool IsAcquired { get; private set; }
+		public bool IsAcquired => Status == RedLockStatus.Acquired;
+		public RedLockStatus Status { get; private set; }
+		public RedLockInstanceSummary InstanceSummary { get; private set; }
 		public int ExtendCount { get; private set; }
+
 		private readonly TimeSpan expiryTime;
 		private readonly TimeSpan? waitTime;
 		private readonly TimeSpan? retryTime;
@@ -138,7 +142,7 @@ namespace RedLockNet.SERedis
 				// ReSharper disable PossibleInvalidOperationException
 				while (!IsAcquired && stopwatch.Elapsed <= waitTime.Value)
 				{
-					IsAcquired = Acquire();
+					(Status, InstanceSummary) = Acquire();
 
 					if (!IsAcquired)
 					{
@@ -149,17 +153,14 @@ namespace RedLockNet.SERedis
 			}
 			else
 			{
-				IsAcquired = Acquire();
+				(Status, InstanceSummary) = Acquire();
 			}
+
+			logger.LogInformation($"Lock status: {Status}, {Resource} ({LockId})");
 
 			if (IsAcquired)
 			{
-				logger.LogInformation($"Acquired lock: {Resource} ({LockId})");
 				StartAutoExtendTimer();
-			}
-			else
-			{
-				logger.LogInformation($"Could not acquire lock: {Resource} ({LockId})");
 			}
 		}
 
@@ -172,7 +173,7 @@ namespace RedLockNet.SERedis
 				// ReSharper disable PossibleInvalidOperationException
 				while (!IsAcquired && stopwatch.Elapsed <= waitTime.Value)
 				{
-					IsAcquired = await AcquireAsync().ConfigureAwait(false);
+					(Status, InstanceSummary) = await AcquireAsync().ConfigureAwait(false);
 
 					if (!IsAcquired)
 					{
@@ -183,22 +184,21 @@ namespace RedLockNet.SERedis
 			}
 			else
 			{
-				IsAcquired = await AcquireAsync().ConfigureAwait(false);
+				(Status, InstanceSummary) = await AcquireAsync().ConfigureAwait(false);
 			}
+
+			logger.LogInformation($"Lock status: {Status}, {Resource} ({LockId})");
 
 			if (IsAcquired)
 			{
-				logger.LogInformation($"Acquired lock: {Resource} ({LockId})");
 				StartAutoExtendTimer();
-			}
-			else
-			{
-				logger.LogInformation($"Could not acquire lock: {Resource} ({LockId})");
 			}
 		}
 
-		private bool Acquire()
+		private (RedLockStatus, RedLockInstanceSummary) Acquire()
 		{
+			var lockSummary = new RedLockInstanceSummary();
+
 			for (var i = 0; i < quorumRetryCount; i++)
 			{
 				cancellationToken.ThrowIfCancellationRequested();
@@ -208,15 +208,15 @@ namespace RedLockNet.SERedis
 
 				var startTick = Stopwatch.GetTimestamp();
 
-				var locksAcquired = Lock();
+				lockSummary = Lock();
 
 				var validityTicks = GetRemainingValidityTicks(startTick);
 
-				logger.LogDebug($"Acquired locks for {Resource} ({LockId}) in {locksAcquired}/{redisCaches.Count} instances, quorum: {quorum}, validityTicks: {validityTicks}");
+				logger.LogDebug($"Acquired locks for {Resource} ({LockId}) in {lockSummary.Acquired}/{redisCaches.Count} instances, quorum: {quorum}, validityTicks: {validityTicks}");
 
-				if (locksAcquired >= quorum && validityTicks > 0)
+				if (lockSummary.Acquired >= quorum && validityTicks > 0)
 				{
-					return true;
+					return (RedLockStatus.Acquired, lockSummary);
 				}
 				
 				// we failed to get enough locks for a quorum, unlock everything and try again
@@ -233,14 +233,18 @@ namespace RedLockNet.SERedis
 				}
 			}
 
-			// give up
-			logger.LogDebug($"Could not acquire quorum after {quorumRetryCount} attempts, giving up: {Resource} ({LockId})");
+			var status = GetFailedRedLockStatus(lockSummary);
 
-			return false;
+			// give up
+			logger.LogDebug($"Could not acquire quorum after {quorumRetryCount} attempts, giving up: {Resource} ({LockId}). {lockSummary}.");
+
+			return (status, lockSummary);
 		}
 
-		private async Task<bool> AcquireAsync()
+		private async Task<(RedLockStatus, RedLockInstanceSummary)> AcquireAsync()
 		{
+			var lockSummary = new RedLockInstanceSummary();
+
 			for (var i = 0; i < quorumRetryCount; i++)
 			{
 				cancellationToken.ThrowIfCancellationRequested();
@@ -250,15 +254,15 @@ namespace RedLockNet.SERedis
 
 				var startTick = Stopwatch.GetTimestamp();
 
-				var locksAcquired = await LockAsync().ConfigureAwait(false);
+				lockSummary = await LockAsync().ConfigureAwait(false);
 
 				var validityTicks = GetRemainingValidityTicks(startTick);
 
-				logger.LogDebug($"Acquired locks for {Resource} ({LockId}) in {locksAcquired}/{redisCaches.Count} instances, quorum: {quorum}, validityTicks: {validityTicks}");
+				logger.LogDebug($"Acquired locks for {Resource} ({LockId}) in {lockSummary.Acquired}/{redisCaches.Count} instances, quorum: {quorum}, validityTicks: {validityTicks}");
 
-				if (locksAcquired >= quorum && validityTicks > 0)
+				if (lockSummary.Acquired >= quorum && validityTicks > 0)
 				{
-					return true;
+					return (RedLockStatus.Acquired, lockSummary);
 				}
 
 				// we failed to get enough locks for a quorum, unlock everything and try again
@@ -275,10 +279,12 @@ namespace RedLockNet.SERedis
 				}
 			}
 
-			// give up
-			logger.LogDebug($"Could not acquire quorum after {quorumRetryCount} attempts, giving up: {Resource} ({LockId})");
+			var status = GetFailedRedLockStatus(lockSummary);
 
-			return false;
+			// give up
+			logger.LogDebug($"Could not acquire quorum after {quorumRetryCount} attempts, giving up: {Resource} ({LockId}). {lockSummary}.");
+
+			return (status, lockSummary);
 		}
 
 		private void StartAutoExtendTimer()
@@ -296,20 +302,22 @@ namespace RedLockNet.SERedis
 
 						var startTick = Stopwatch.GetTimestamp();
 
-						var locksExtended = Extend();
+						var extendSummary = Extend();
 
 						var validityTicks = GetRemainingValidityTicks(startTick);
 
-						if (locksExtended >= quorum && validityTicks > 0)
+						if (extendSummary.Acquired >= quorum && validityTicks > 0)
 						{
-							IsAcquired = true;
+							Status = RedLockStatus.Acquired;
+							InstanceSummary = extendSummary;
 							ExtendCount++;
 
 							logger.LogDebug($"Extended lock: {Resource} ({LockId})");
 						}
 						else
 						{
-							IsAcquired = false;
+							Status = GetFailedRedLockStatus(extendSummary);
+							InstanceSummary = extendSummary;
 
 							logger.LogWarning($"Failed to extend lock: {Resource} ({LockId})");
 						}
@@ -335,50 +343,45 @@ namespace RedLockNet.SERedis
 			return validityTicks;
 		}
 
-		private int Lock()
+		private RedLockInstanceSummary Lock()
 		{
-			var locksAcquired = 0;
+			var lockResults = new ConcurrentBag<RedLockInstanceResult>();
 
 			Parallel.ForEach(redisCaches, cache =>
 			{
-				if (LockInstance(cache))
-				{
-					Interlocked.Increment(ref locksAcquired);
-				}
+				lockResults.Add(LockInstance(cache));
 			});
 
-			return locksAcquired;
+			return PopulateRedLockResult(lockResults);
 		}
 
-		private async Task<int> LockAsync()
+		private async Task<RedLockInstanceSummary> LockAsync()
 		{
 			var lockTasks = redisCaches.Select(LockInstanceAsync);
 
 			var lockResults = await TaskUtils.WhenAll(lockTasks).ConfigureAwait(false);
 
-			return lockResults.Count(x => x);
+			return PopulateRedLockResult(lockResults);
 		}
 
-		private int Extend()
+		private RedLockInstanceSummary Extend()
 		{
-			var locksExtended = 0;
+			var extendResults = new ConcurrentBag<RedLockInstanceResult>();
 
 			Parallel.ForEach(redisCaches, cache =>
 			{
-				if (ExtendInstance(cache))
-				{
-					Interlocked.Increment(ref locksExtended);
-				}
+				extendResults.Add(ExtendInstance(cache));
 			});
 
-			return locksExtended;
+			return PopulateRedLockResult(extendResults);
 		}
 
 		private void Unlock()
 		{
 			Parallel.ForEach(redisCaches, UnlockInstance);
 
-			IsAcquired = false;
+			Status = RedLockStatus.Unlocked;
+			InstanceSummary = new RedLockInstanceSummary();
 		}
 
 		private async Task UnlockAsync()
@@ -388,23 +391,27 @@ namespace RedLockNet.SERedis
 			await TaskUtils.WhenAll(unlockTasks).ConfigureAwait(false);
 		}
 
-		private bool LockInstance(RedisConnection cache)
+		private RedLockInstanceResult LockInstance(RedisConnection cache)
 		{
 			var redisKey = GetRedisKey(cache.RedisKeyFormat, Resource);
 			var host = GetHost(cache.ConnectionMultiplexer);
 
-			var result = false;
+			RedLockInstanceResult result;
 
 			try
 			{
 				logger.LogTrace($"LockInstance enter {host}: {redisKey}, {LockId}, {expiryTime}");
-				result = cache.ConnectionMultiplexer
+				var redisResult = cache.ConnectionMultiplexer
 					.GetDatabase(cache.RedisDatabase)
 					.StringSet(redisKey, LockId, expiryTime, When.NotExists, CommandFlags.DemandMaster);
+
+				result = redisResult ? RedLockInstanceResult.Success : RedLockInstanceResult.Conflicted;
 			}
 			catch (Exception ex)
 			{
 				logger.LogDebug($"Error locking lock instance {host}: {ex.Message}");
+
+				result = RedLockInstanceResult.Error;
 			}
 
 			logger.LogTrace($"LockInstance exit {host}: {redisKey}, {LockId}, {result}");
@@ -412,24 +419,28 @@ namespace RedLockNet.SERedis
 			return result;
 		}
 
-		private async Task<bool> LockInstanceAsync(RedisConnection cache)
+		private async Task<RedLockInstanceResult> LockInstanceAsync(RedisConnection cache)
 		{
 			var redisKey = GetRedisKey(cache.RedisKeyFormat, Resource);
 			var host = GetHost(cache.ConnectionMultiplexer);
 
-			var result = false;
+			RedLockInstanceResult result;
 
 			try
 			{
 				logger.LogTrace($"LockInstanceAsync enter {host}: {redisKey}, {LockId}, {expiryTime}");
-				result = await cache.ConnectionMultiplexer
+				var redisResult = await cache.ConnectionMultiplexer
 					.GetDatabase(cache.RedisDatabase)
 					.StringSetAsync(redisKey, LockId, expiryTime, When.NotExists, CommandFlags.DemandMaster)
 					.ConfigureAwait(false);
+
+				result = redisResult ? RedLockInstanceResult.Success : RedLockInstanceResult.Conflicted;
 			}
 			catch (Exception ex)
 			{
 				logger.LogDebug($"Error locking lock instance {host}: {ex.Message}");
+
+				result = RedLockInstanceResult.Error;
 			}
 
 			logger.LogTrace($"LockInstanceAsync exit {host}: {redisKey}, {LockId}, {result}");
@@ -437,25 +448,31 @@ namespace RedLockNet.SERedis
 			return result;
 		}
 
-		private bool ExtendInstance(RedisConnection cache)
+		private RedLockInstanceResult ExtendInstance(RedisConnection cache)
 		{
 			var redisKey = GetRedisKey(cache.RedisKeyFormat, Resource);
 			var host = GetHost(cache.ConnectionMultiplexer);
 
-			var result = false;
+			RedLockInstanceResult result;
 
 			try
 			{
 				logger.LogTrace($"ExtendInstance enter {host}: {redisKey}, {LockId}, {expiryTime}");
+				
+				// Returns 1 on success, 0 on failure setting expiry or key not existing, -1 if the key value didn't match
 				var extendResult = (long) cache.ConnectionMultiplexer
 					.GetDatabase(cache.RedisDatabase)
 					.ScriptEvaluate(ExtendIfMatchingValueScript, new RedisKey[] {redisKey}, new RedisValue[] {LockId, (long) expiryTime.TotalMilliseconds}, CommandFlags.DemandMaster);
 
-				result = extendResult == 1;
+				result = extendResult == 1 ? RedLockInstanceResult.Success
+					: extendResult == -1 ? RedLockInstanceResult.Conflicted
+					: RedLockInstanceResult.Error;
 			}
 			catch (Exception ex)
 			{
 				logger.LogDebug($"Error extending lock instance {host}: {ex.Message}");
+
+				result = RedLockInstanceResult.Error;
 			}
 
 			logger.LogTrace($"ExtendInstance exit {host}: {redisKey}, {LockId}, {result}");
@@ -563,6 +580,48 @@ namespace RedLockNet.SERedis
 			Unlock();
 
 			isDisposed = true;
+		}
+
+		private RedLockStatus GetFailedRedLockStatus(RedLockInstanceSummary lockResult)
+		{
+			if (lockResult.Acquired >= quorum)
+			{
+				// if we got here with a quorum then validity must have expired
+				return RedLockStatus.Expired;
+			}
+
+			if (lockResult.Acquired + lockResult.Conflicted >= quorum)
+			{
+				// we had enough instances for a quorum, but some were locked with another LockId
+				return RedLockStatus.Conflicted;
+			}
+
+			return RedLockStatus.NoQuorum;
+		}
+
+		private static RedLockInstanceSummary PopulateRedLockResult(IEnumerable<RedLockInstanceResult> instanceResults)
+		{
+			var acquired = 0;
+			var conflicted = 0;
+			var error = 0;
+
+			foreach (var instanceResult in instanceResults)
+			{
+				switch (instanceResult)
+				{
+					case RedLockInstanceResult.Success:
+						acquired++;
+						break;
+					case RedLockInstanceResult.Conflicted:
+						conflicted++;
+						break;
+					case RedLockInstanceResult.Error:
+						error++;
+						break;
+				}
+			}
+
+			return new RedLockInstanceSummary(acquired, conflicted, error);
 		}
 
 		/// <summary>
