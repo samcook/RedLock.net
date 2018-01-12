@@ -27,6 +27,8 @@ namespace RedLockNet.SERedis
 
 		private Timer lockKeepaliveTimer;
 
+	    private static readonly double TicksPerStopwatchTimestamp = TimeSpan.TicksPerSecond / (double)Stopwatch.Frequency;
+
 		private static readonly string UnlockScript = EmbeddedResourceLoader.GetEmbeddedResource("RedLockNet.SERedis.Lua.Unlock.lua");
 
 		// Set the expiry for the given key if its value matches the supplied value.
@@ -206,11 +208,11 @@ namespace RedLockNet.SERedis
 				var iteration = i + 1;
 				logger.LogDebug($"Lock attempt {iteration}/{quorumRetryCount}: {Resource} ({LockId}), expiry: {expiryTime}");
 
-				var startTick = Stopwatch.GetTimestamp();
+				var startTimestamp = Stopwatch.GetTimestamp();
 
 				var locksAcquired = Lock();
 
-				var validityTicks = GetRemainingValidityTicks(startTick);
+				var validityTicks = GetRemainingValidityTicks(startTimestamp);
 
 				logger.LogDebug($"Acquired locks for {Resource} ({LockId}) in {locksAcquired}/{redisCaches.Count} instances, quorum: {quorum}, validityTicks: {validityTicks}");
 
@@ -239,7 +241,7 @@ namespace RedLockNet.SERedis
 			return false;
 		}
 
-		private async Task<bool> AcquireAsync()
+	    private async Task<bool> AcquireAsync()
 		{
 			for (var i = 0; i < quorumRetryCount; i++)
 			{
@@ -248,11 +250,11 @@ namespace RedLockNet.SERedis
 				var iteration = i + 1;
 				logger.LogDebug($"Lock attempt {iteration}/{quorumRetryCount}: {Resource} ({LockId}), expiry: {expiryTime}");
 
-				var startTick = Stopwatch.GetTimestamp();
+				var startTimestamp = Stopwatch.GetTimestamp();
 
 				var locksAcquired = await LockAsync().ConfigureAwait(false);
 
-				var validityTicks = GetRemainingValidityTicks(startTick);
+				var validityTicks = GetRemainingValidityTicks(startTimestamp);
 
 				logger.LogDebug($"Acquired locks for {Resource} ({LockId}) in {locksAcquired}/{redisCaches.Count} instances, quorum: {quorum}, validityTicks: {validityTicks}");
 
@@ -294,11 +296,11 @@ namespace RedLockNet.SERedis
 					{
 						logger.LogTrace($"Lock renewal timer fired: {Resource} ({LockId})");
 
-						var startTick = Stopwatch.GetTimestamp();
+						var startTimestamp = Stopwatch.GetTimestamp();
 
 						var locksExtended = Extend();
 
-						var validityTicks = GetRemainingValidityTicks(startTick);
+						var validityTicks = GetRemainingValidityTicks(startTimestamp);
 
 						if (locksExtended >= quorum && validityTicks > 0)
 						{
@@ -326,12 +328,13 @@ namespace RedLockNet.SERedis
 				(int) interval);
 		}
 
-		private long GetRemainingValidityTicks(long startTick)
+		private long GetRemainingValidityTicks(long startTimestamp)
 		{
 			// Add 2 milliseconds to the drift to account for Redis expires precision,
 			// which is 1 milliescond, plus 1 millisecond min drift for small TTLs.
 			var driftTicks = (long) (expiryTime.Ticks * clockDriftFactor) + TimeSpan.FromMilliseconds(2).Ticks;
-			var validityTicks = expiryTime.Ticks - (Stopwatch.GetTimestamp() - startTick) - driftTicks;
+		    var elapsedTicks = ConvertToTicks(Stopwatch.GetTimestamp() - startTimestamp);
+			var validityTicks = expiryTime.Ticks - elapsedTicks - driftTicks;
 			return validityTicks;
 		}
 
@@ -514,6 +517,11 @@ namespace RedLockNet.SERedis
 		{
 			return string.Format(redisKeyFormat, resource);
 		}
+
+	    private static long ConvertToTicks(long stopwatchTimestamp)
+	    {
+	        return (long) (stopwatchTimestamp * TicksPerStopwatchTimestamp);
+	    }
 
 		internal static string GetHost(IConnectionMultiplexer cache)
 		{
