@@ -156,7 +156,7 @@ namespace RedLockNet.SERedis
 				(Status, InstanceSummary) = Acquire();
 			}
 
-			logger.LogInformation($"Lock status: {Status}, {Resource} ({LockId})");
+			logger.LogInformation($"Lock status: {Status} ({InstanceSummary}), {Resource} ({LockId})");
 
 			if (IsAcquired)
 			{
@@ -187,7 +187,7 @@ namespace RedLockNet.SERedis
 				(Status, InstanceSummary) = await AcquireAsync().ConfigureAwait(false);
 			}
 
-			logger.LogInformation($"Lock status: {Status}, {Resource} ({LockId})");
+			logger.LogInformation($"Lock status: {Status} ({InstanceSummary}), {Resource} ({LockId})");
 
 			if (IsAcquired)
 			{
@@ -312,14 +312,14 @@ namespace RedLockNet.SERedis
 							InstanceSummary = extendSummary;
 							ExtendCount++;
 
-							logger.LogDebug($"Extended lock: {Resource} ({LockId})");
+							logger.LogDebug($"Extended lock, {Status} ({InstanceSummary}): {Resource} ({LockId})");
 						}
 						else
 						{
 							Status = GetFailedRedLockStatus(extendSummary);
 							InstanceSummary = extendSummary;
 
-							logger.LogWarning($"Failed to extend lock: {Resource} ({LockId})");
+							logger.LogWarning($"Failed to extend lock, {Status} ({InstanceSummary}): {Resource} ({LockId})");
 						}
 					}
 					catch (Exception exception)
@@ -379,9 +379,6 @@ namespace RedLockNet.SERedis
 		private void Unlock()
 		{
 			Parallel.ForEach(redisCaches, UnlockInstance);
-
-			Status = RedLockStatus.Unlocked;
-			InstanceSummary = new RedLockInstanceSummary();
 		}
 
 		private async Task UnlockAsync()
@@ -578,6 +575,9 @@ namespace RedLockNet.SERedis
 			}
 
 			Unlock();
+
+			Status = RedLockStatus.Unlocked;
+			InstanceSummary = new RedLockInstanceSummary();
 
 			isDisposed = true;
 		}
