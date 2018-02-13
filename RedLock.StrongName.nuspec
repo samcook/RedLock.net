@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
 	<metadata>
 		<id>RedLock.net.StrongName</id>
-		<version>2.0.0-pre2</version>
+		<version>2.0.0</version>
 		<title>RedLock.net (Strong Named)</title>
 		<authors>Sam Cook</authors>
 		<owners>Sam Cook</owners>
@@ -11,8 +11,8 @@
 		<iconUrl>https://raw.githubusercontent.com/samcook/RedLock.net/master/redlock-icon.png</iconUrl>
 		<requireLicenseAcceptance>false</requireLicenseAcceptance>
 		<description>An implementation of the Redlock distributed lock algorithm</description>
-		<releaseNotes>2.0.0-pre2 - .NET Core release</releaseNotes>
-		<copyright>Copyright 2017 Sam Cook</copyright>
+		<releaseNotes>2.0.0 - .NET Core release</releaseNotes>
+		<copyright>Copyright 2018 Sam Cook</copyright>
 		<tags>RedLock Redis Distributed Lock</tags>
 		<dependencies>
 			<group targetFramework=".NETStandard1.5">
