@@ -5,7 +5,7 @@
     <AssemblyName>RedLockNet.SERedis.StrongName</AssemblyName>
     <PackageId>RedLock.net</PackageId>
     <RootNamespace>RedLockNet.SERedis</RootNamespace>
-    <Version>2.0.0</Version>
+    <Version>2.1.0-pre1</Version>
     <Description>An implementation of the Redlock distributed lock algorithm</Description>
     <Authors>Sam Cook</Authors>
     <Company />
@@ -17,7 +17,10 @@
     <RepositoryUrl>https://github.com/samcook/RedLock.net</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageTags>RedLock Redis Distributed Lock</PackageTags>
-    <PackageReleaseNotes>2.0.0 - .NET Core release</PackageReleaseNotes>
+    <PackageReleaseNotes>
+      2.1.0 - Add connection change events and more detailed lock status information
+      2.0.0 - .NET Core release
+    </PackageReleaseNotes>
     <GeneratePackageOnBuild>False</GeneratePackageOnBuild>
 	  <SignAssembly>True</SignAssembly>
 	  <AssemblyOriginatorKeyFile>..\RedLock.StrongName.snk</AssemblyOriginatorKeyFile>
