@@ -4,20 +4,20 @@
     <TargetFramework>netstandard1.1</TargetFramework>
     <RootNamespace>RedLockNet</RootNamespace>
     <GeneratePackageOnBuild>False</GeneratePackageOnBuild>
-    <Version>2.0.0-pre3</Version>
+    <Version>2.0.0</Version>
     <Authors>Sam Cook</Authors>
     <Company />
     <Product>RedLock.net</Product>
     <Description>Abstractions for the RedLock.net package</Description>
     <PackageId>RedLock.net.Abstractions</PackageId>
-    <Copyright>Copyright 2017 Sam Cook</Copyright>
+    <Copyright>Copyright 2018 Sam Cook</Copyright>
     <PackageLicenseUrl>https://github.com/samcook/RedLock.net/blob/master/LICENSE</PackageLicenseUrl>
     <PackageProjectUrl>https://github.com/samcook/RedLock.net</PackageProjectUrl>
     <RepositoryUrl>https://github.com/samcook/RedLock.net</RepositoryUrl>
     <PackageIconUrl>https://raw.githubusercontent.com/samcook/RedLock.net/master/redlock-icon.png</PackageIconUrl>
     <RepositoryType>git</RepositoryType>
     <PackageTags>RedLock Redis Distributed Lock</PackageTags>
-    <PackageReleaseNotes>2.0.0-pre3 - .NET Core release</PackageReleaseNotes>
+    <PackageReleaseNotes>2.0.0 - .NET Core release</PackageReleaseNotes>
     <AssemblyName>RedLockNet.Abstractions.StrongName</AssemblyName>
     <SignAssembly>True</SignAssembly>
     <AssemblyOriginatorKeyFile>..\RedLock.StrongName.snk</AssemblyOriginatorKeyFile>
