@@ -15,6 +15,7 @@ using StackExchange.Redis;
 namespace RedLockNet.Tests
 {
 	[TestFixture]
+	[Category("RedLockTests")]
 	public class RedLockTests
 	{
 		private ILoggerFactory loggerFactory;
