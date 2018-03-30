@@ -20,6 +20,6 @@ before_test:
 
     Start-Process run-all-servers.cmd
 
-    Start-Sleep 5
+    Start-Sleep 8
 artifacts:
 - path: '*.nupkg'
