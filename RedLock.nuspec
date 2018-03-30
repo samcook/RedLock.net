@@ -11,7 +11,10 @@
 		<iconUrl>https://raw.githubusercontent.com/samcook/RedLock.net/master/redlock-icon.png</iconUrl>
 		<requireLicenseAcceptance>false</requireLicenseAcceptance>
 		<description>An implementation of the Redlock distributed lock algorithm</description>
-		<releaseNotes>2.0.0 - .NET Core release</releaseNotes>
+		<releaseNotes>
+			vNext - Add NetStandard 2 support
+			2.0.0 - .NET Core release
+		</releaseNotes>
 		<copyright>Copyright 2018 Sam Cook</copyright>
 		<tags>RedLock Redis Distributed Lock</tags>
 		<dependencies>
