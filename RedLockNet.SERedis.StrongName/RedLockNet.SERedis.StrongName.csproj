@@ -5,7 +5,7 @@
 		<AssemblyName>RedLockNet.SERedis.StrongName</AssemblyName>
 		<PackageId>RedLock.net</PackageId>
 		<RootNamespace>RedLockNet.SERedis</RootNamespace>
-		<Version>2.1.0-pre2</Version>
+		<Version>2.1.0</Version>
 		<Description>An implementation of the Redlock distributed lock algorithm</Description>
 		<Authors>Sam Cook</Authors>
 		<Company />

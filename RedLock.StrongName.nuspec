@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
 	<metadata>
 		<id>RedLock.net.StrongName</id>
-		<version>2.1.0-pre2</version>
+		<version>2.1.0</version>
 		<title>RedLock.net (Strong Named)</title>
 		<authors>Sam Cook</authors>
 		<owners>Sam Cook</owners>
@@ -20,7 +20,7 @@
 		<dependencies>
 			<group targetFramework=".NETStandard2.0">
 				<dependency id="Microsoft.Extensions.Logging.Abstractions" version="2.0.1" exclude="Build,Analyzers" />
-				<dependency id="StackExchange.Redis.StrongName" version="1.2.6" exclude="Build,Analyzers" />
+				<dependency id="StackExchange.Redis.StrongName" version="[1.2.6,2.0)" exclude="Build,Analyzers" />
 				<dependency id="Microsoft.Extensions.Logging" version="2.0.1" exclude="Build,Analyzers" />
 				<dependency id="System.Threading.Tasks.Parallel" version="4.3.0" exclude="Build,Analyzers" />
 				<dependency id="System.Linq.Parallel" version="4.3.0" exclude="Build,Analyzers" />
@@ -28,7 +28,7 @@
 			</group>
 			<group targetFramework=".NETStandard1.5">
 				<dependency id="Microsoft.Extensions.Logging.Abstractions" version="1.1.2" exclude="Build,Analyzers" />
-				<dependency id="StackExchange.Redis.StrongName" version="1.2.6" exclude="Build,Analyzers" />
+				<dependency id="StackExchange.Redis.StrongName" version="[1.2.6,2.0)" exclude="Build,Analyzers" />
 				<dependency id="NETStandard.Library" version="1.6.1" exclude="Build,Analyzers" />
 				<dependency id="Microsoft.Extensions.Logging" version="1.1.2" exclude="Build,Analyzers" />
 				<dependency id="System.Threading.Tasks.Parallel" version="4.3.0" exclude="Build,Analyzers" />
@@ -37,7 +37,7 @@
 			</group>
 			<group targetFramework=".NETFramework4.6.1">
 				<dependency id="Microsoft.Extensions.Logging.Abstractions" version="2.0.1" exclude="Build,Analyzers" />
-				<dependency id="StackExchange.Redis.StrongName" version="1.2.6" exclude="Build,Analyzers" />
+				<dependency id="StackExchange.Redis.StrongName" version="[1.2.6,2.0)" exclude="Build,Analyzers" />
 				<dependency id="Microsoft.Extensions.Logging" version="2.0.1" exclude="Build,Analyzers" />
 				<dependency id="System.Threading.Tasks.Parallel" version="4.3.0" exclude="Build,Analyzers" />
 				<dependency id="System.Linq.Parallel" version="4.3.0" exclude="Build,Analyzers" />
@@ -45,7 +45,7 @@
 			</group>
 			<group targetFramework=".NETFramework4.5">
 				<dependency id="Microsoft.Extensions.Logging.Abstractions" version="1.1.2" exclude="Build,Analyzers" />
-				<dependency id="StackExchange.Redis.StrongName" version="1.2.6" exclude="Build,Analyzers" />
+				<dependency id="StackExchange.Redis.StrongName" version="[1.2.6,2.0)" exclude="Build,Analyzers" />
 				<dependency id="Microsoft.Extensions.Logging" version="1.1.2" exclude="Build,Analyzers" />
 				<dependency id="System.ValueTuple" version="4.4.0" exclude="Build,Analyzers" />
 			</group>
