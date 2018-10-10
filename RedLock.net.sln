@@ -6,12 +6,11 @@ MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{1DF05864-1C9B-442D-A425-0A14C0D5765B}"
 	ProjectSection(SolutionItems) = preProject
 		appveyor.yml = appveyor.yml
+		Directory.Build.props = Directory.Build.props
 		LICENSE = LICENSE
 		README.md = README.md
 		redlock-icon.png = redlock-icon.png
-		RedLock.nuspec = RedLock.nuspec
-		RedLock.StrongName.nuspec = RedLock.StrongName.nuspec
-		RedLock.StrongName.snk = RedLock.StrongName.snk
+		RedLock.snk = RedLock.snk
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RedLockNet.SERedis", "RedLockNet.SERedis\RedLockNet.SERedis.csproj", "{024849E0-03AF-4A6E-8CD5-D51EBB10ECB1}"
@@ -20,19 +19,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RedLockNet.Abstractions", "
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RedLockNet.Tests", "RedLockNet.Tests\RedLockNet.Tests.csproj", "{4F9D3DBD-28D0-45FB-8A83-DCB0EECB00CC}"
 EndProject
-Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "RedLockNet.SERedis.Shared", "RedLockNet.SERedis.Shared\RedLockNet.SERedis.Shared.shproj", "{D6475C82-F51B-4DB6-8F13-B9BF449E52CF}"
-EndProject
-Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "RedLockNet.Abstractions.Shared", "RedLockNet.Abstractions.Shared\RedLockNet.Abstractions.Shared.shproj", "{C26C6723-06C4-4B2F-B35A-8FF514A9DB69}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RedLockNet.Abstractions.StrongName", "RedLockNet.Abstractions.StrongName\RedLockNet.Abstractions.StrongName.csproj", "{C21C9AAC-A2FF-40C3-A22C-CEBAFD0D03C6}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RedLockNet.SERedis.StrongName", "RedLockNet.SERedis.StrongName\RedLockNet.SERedis.StrongName.csproj", "{D348355C-446F-4DB9-9973-CDCCF504417F}"
-EndProject
 Global
-	GlobalSection(SharedMSBuildProjectFiles) = preSolution
-		RedLockNet.Abstractions.Shared\RedLockNet.Abstractions.Shared.projitems*{c26c6723-06c4-4b2f-b35a-8ff514a9db69}*SharedItemsImports = 13
-		RedLockNet.SERedis.Shared\RedLockNet.SERedis.Shared.projitems*{d6475c82-f51b-4db6-8f13-b9bf449e52cf}*SharedItemsImports = 13
-	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
@@ -50,16 +37,11 @@ Global
 		{4F9D3DBD-28D0-45FB-8A83-DCB0EECB00CC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4F9D3DBD-28D0-45FB-8A83-DCB0EECB00CC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4F9D3DBD-28D0-45FB-8A83-DCB0EECB00CC}.Release|Any CPU.Build.0 = Release|Any CPU
-		{C21C9AAC-A2FF-40C3-A22C-CEBAFD0D03C6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{C21C9AAC-A2FF-40C3-A22C-CEBAFD0D03C6}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{C21C9AAC-A2FF-40C3-A22C-CEBAFD0D03C6}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{C21C9AAC-A2FF-40C3-A22C-CEBAFD0D03C6}.Release|Any CPU.Build.0 = Release|Any CPU
-		{D348355C-446F-4DB9-9973-CDCCF504417F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{D348355C-446F-4DB9-9973-CDCCF504417F}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{D348355C-446F-4DB9-9973-CDCCF504417F}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{D348355C-446F-4DB9-9973-CDCCF504417F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {6627A230-06E7-47D1-8471-7B295ADFDB96}
 	EndGlobalSection
 EndGlobal

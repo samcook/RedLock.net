@@ -1,15 +1,11 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-
+<Project>
 	<PropertyGroup>
-		<TargetFrameworks>netstandard1.1;netstandard2.0</TargetFrameworks>
-		<RootNamespace>RedLockNet</RootNamespace>
-		<GeneratePackageOnBuild>False</GeneratePackageOnBuild>
-		<Version>2.1.0</Version>
+		<AssemblyVersion>2.2.0.0</AssemblyVersion>
+		<Version>2.2.0-pre1</Version>
+		<FileVersion>$(Version)</FileVersion>
 		<Authors>Sam Cook</Authors>
 		<Company />
 		<Product>RedLock.net</Product>
-		<Description>Abstractions for the RedLock.net package</Description>
-		<PackageId>RedLock.net.Abstractions</PackageId>
 		<Copyright>Copyright 2018 Sam Cook</Copyright>
 		<PackageLicenseUrl>https://github.com/samcook/RedLock.net/blob/master/LICENSE</PackageLicenseUrl>
 		<PackageProjectUrl>https://github.com/samcook/RedLock.net</PackageProjectUrl>
@@ -18,15 +14,11 @@
 		<RepositoryType>git</RepositoryType>
 		<PackageTags>RedLock Redis Distributed Lock</PackageTags>
 		<PackageReleaseNotes>
+			2.2.0 - Update to StackExchange.Redis 2.0. Switch to a single strong named package and adjust platform targets to match StackExchange.Redis 2.0.
 			2.1.0 - Add connection change events and more detailed lock status information
 			2.0.0 - .NET Core release
 		</PackageReleaseNotes>
-		<AssemblyName>RedLockNet.Abstractions.StrongName</AssemblyName>
-		<SignAssembly>True</SignAssembly>
-		<AssemblyOriginatorKeyFile>..\RedLock.StrongName.snk</AssemblyOriginatorKeyFile>
-		<DefineConstants>STRONG_NAME</DefineConstants>
+
+		<NoWarn>CS7035</NoWarn>
 	</PropertyGroup>
-
-	<Import Project="..\RedLockNet.Abstractions.Shared\RedLockNet.Abstractions.Shared.projitems" Label="Shared" />
-
 </Project>

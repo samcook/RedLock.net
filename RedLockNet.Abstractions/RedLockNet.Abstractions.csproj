@@ -1,29 +1,15 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFrameworks>netstandard1.1;netstandard2.0</TargetFrameworks>
-		<RootNamespace>RedLockNet</RootNamespace>
-		<GeneratePackageOnBuild>False</GeneratePackageOnBuild>
-		<Version>2.1.0</Version>
-		<Authors>Sam Cook</Authors>
-		<Company />
-		<Product>RedLock.net</Product>
-		<Description>Abstractions for the RedLock.net package</Description>
-		<PackageId>RedLock.net.Abstractions</PackageId>
-		<Copyright>Copyright 2018 Sam Cook</Copyright>
-		<PackageLicenseUrl>https://github.com/samcook/RedLock.net/blob/master/LICENSE</PackageLicenseUrl>
-		<PackageProjectUrl>https://github.com/samcook/RedLock.net</PackageProjectUrl>
-		<RepositoryUrl>https://github.com/samcook/RedLock.net</RepositoryUrl>
-		<PackageIconUrl>https://raw.githubusercontent.com/samcook/RedLock.net/master/redlock-icon.png</PackageIconUrl>
-		<RepositoryType>git</RepositoryType>
-		<PackageTags>RedLock Redis Distributed Lock</PackageTags>
-		<PackageReleaseNotes>
-			2.1.0 - Add connection change events and more detailed lock status information
-			2.0.0 - .NET Core release
-		</PackageReleaseNotes>
+		<TargetFrameworks>net461;net472;netstandard2.0</TargetFrameworks>
 		<AssemblyName>RedLockNet.Abstractions</AssemblyName>
+		<PackageId>RedLock.net.Abstractions</PackageId>
+		<RootNamespace>RedLockNet</RootNamespace>
+		<Title>RedLock.net Abstractions</Title>
+		<Description>Abstractions for the RedLock.net package</Description>
+		<GeneratePackageOnBuild>False</GeneratePackageOnBuild>
+		<SignAssembly>True</SignAssembly>
+		<AssemblyOriginatorKeyFile>..\RedLock.snk</AssemblyOriginatorKeyFile>
 	</PropertyGroup>
-
-	<Import Project="..\RedLockNet.Abstractions.Shared\RedLockNet.Abstractions.Shared.projitems" Label="Shared" />
 
 </Project>

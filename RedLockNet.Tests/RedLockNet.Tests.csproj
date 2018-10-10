@@ -1,9 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFrameworks>net451;net46;netcoreapp2.0</TargetFrameworks>
+		<TargetFrameworks>net461;net472;netcoreapp2.0</TargetFrameworks>
 		<AssemblyName>RedLockNet.Tests</AssemblyName>
 		<RootNamespace>RedLockNet.Tests</RootNamespace>
+		<SignAssembly>True</SignAssembly>
+		<AssemblyOriginatorKeyFile>..\RedLock.snk</AssemblyOriginatorKeyFile>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -12,22 +14,13 @@
 		<PackageReference Include="NUnit" Version="3.7.1" />
 		<PackageReference Include="NUnit3TestAdapter" Version="3.8.0-alpha1" />
 		<PackageReference Include="Redis-64" Version="3.0.503" />
-	</ItemGroup>
 
-	<ItemGroup Condition=" '$(TargetFramework)' == 'net451' ">
-		<PackageReference Include="Microsoft.Extensions.Logging.Console" Version="1.1.2" />
-	</ItemGroup>
-
-	<ItemGroup Condition=" '$(TargetFramework)' == 'net46' ">
-		<PackageReference Include="Microsoft.Extensions.Logging.Console" Version="1.1.2" />
-	</ItemGroup>
-
-	<ItemGroup Condition=" '$(TargetFramework)' == 'netcoreapp2.0' ">
-		<PackageReference Include="Microsoft.Extensions.Logging.Console" Version="2.0.1" />
+		<PackageReference Include="Microsoft.Extensions.Logging.Console" Version="[2.0.0,)" />
 	</ItemGroup>
 
 	<ItemGroup>
 		<ProjectReference Include="..\RedLockNet.SERedis\RedLockNet.SERedis.csproj" />
+		<ProjectReference Include="..\RedLockNet.Abstractions\RedLockNet.Abstractions.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>

@@ -1,59 +1,42 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFrameworks>net45;netstandard1.5;netstandard2.0</TargetFrameworks>
+		<TargetFrameworks>net461;net472;netstandard2.0</TargetFrameworks>
 		<AssemblyName>RedLockNet.SERedis</AssemblyName>
 		<PackageId>RedLock.net</PackageId>
 		<RootNamespace>RedLockNet.SERedis</RootNamespace>
-		<Version>2.1.0</Version>
+		<Title>RedLock.net</Title>
 		<Description>An implementation of the Redlock distributed lock algorithm</Description>
-		<Authors>Sam Cook</Authors>
-		<Company />
-		<Product>RedLock.net</Product>
-		<Copyright>Copyright 2018 Sam Cook</Copyright>
-		<PackageLicenseUrl>https://github.com/samcook/RedLock.net/blob/master/LICENSE</PackageLicenseUrl>
-		<PackageProjectUrl>https://github.com/samcook/RedLock.net</PackageProjectUrl>
-		<PackageIconUrl>https://raw.githubusercontent.com/samcook/RedLock.net/master/redlock-icon.png</PackageIconUrl>
-		<RepositoryUrl>https://github.com/samcook/RedLock.net</RepositoryUrl>
-		<RepositoryType>git</RepositoryType>
-		<PackageTags>RedLock Redis Distributed Lock</PackageTags>
-		<PackageReleaseNotes>
-			2.1.0 - Add connection change events and more detailed lock status information
-			2.0.0 - .NET Core release
-		</PackageReleaseNotes>
 		<GeneratePackageOnBuild>False</GeneratePackageOnBuild>
+		<SignAssembly>True</SignAssembly>
+		<AssemblyOriginatorKeyFile>..\RedLock.snk</AssemblyOriginatorKeyFile>
+		<TargetsForTfmSpecificBuildOutput>$(TargetsForTfmSpecificBuildOutput);CopyProjectReferencesToPackage</TargetsForTfmSpecificBuildOutput>
 	</PropertyGroup>
 
+	<Target Name="CopyProjectReferencesToPackage" DependsOnTargets="ResolveReferences">
+		<ItemGroup>
+			<BuildOutputInPackage Include="@(ReferenceCopyLocalPaths->WithMetadataValue('ReferenceSourceTarget', 'ProjectReference'))" />
+		</ItemGroup>
+	</Target>
+
 	<ItemGroup>
-		<PackageReference Include="StackExchange.Redis" Version="1.2.6" />
-		<PackageReference Include="System.ValueTuple" Version="4.4.0" />
-	</ItemGroup>
-
-	<ItemGroup Condition=" '$(TargetFramework)' == 'net45' ">
-		<Reference Include="System" />
-		<Reference Include="Microsoft.CSharp" />
-		<PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="1.1.2" />
-		<PackageReference Include="Microsoft.Extensions.Logging" Version="1.1.2" />
-	</ItemGroup>
-
-	<ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.5' ">
-		<PackageReference Include="System.Threading.Tasks.Parallel" Version="4.3.0" />
-		<PackageReference Include="System.Linq.Parallel" Version="4.3.0" />
-		<PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="1.1.2" />
-		<PackageReference Include="Microsoft.Extensions.Logging" Version="1.1.2" />
-	</ItemGroup>
-
-	<ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
-		<PackageReference Include="System.Threading.Tasks.Parallel" Version="4.3.0" />
-		<PackageReference Include="System.Linq.Parallel" Version="4.3.0" />
-		<PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="2.0.1" />
-		<PackageReference Include="Microsoft.Extensions.Logging" Version="2.0.1" />
+	  <None Remove="Lua\Extend.lua" />
+	  <None Remove="Lua\Unlock.lua" />
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\RedLockNet.Abstractions\RedLockNet.Abstractions.csproj" />
+	  <EmbeddedResource Include="Lua\Extend.lua" />
+	  <EmbeddedResource Include="Lua\Unlock.lua" />
 	</ItemGroup>
 
-	<Import Project="..\RedLockNet.SERedis.Shared\RedLockNet.SERedis.Shared.projitems" Label="Shared" />
+	<ItemGroup>
+		<PackageReference Include="StackExchange.Redis" Version="[2.0.513,)" />
+		<PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[2.0.0,)" />
+		<PackageReference Include="Microsoft.Extensions.Logging" Version="[2.0.0,)" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\RedLockNet.Abstractions\RedLockNet.Abstractions.csproj" PrivateAssets="all" />
+	</ItemGroup>
 
 </Project>
