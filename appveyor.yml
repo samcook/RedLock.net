@@ -5,12 +5,12 @@ configuration: Release
 environment:
   REDIS_PATH: C:\Users\appveyor\.nuget\packages\redis-64\3.0.503\tools
 before_build:
-- cmd: nuget restore
+- cmd: dotnet restore
 build:
   verbosity: normal
 after_build:
 - cmd: >-
-    dotnet pack --no-build -c Release RedLock.SERedis\RedLock.SERedis.csproj /p:PackageOutputPath=.nupkgs
+    dotnet pack --no-build -c Release RedLockNet.SERedis\RedLockNet.SERedis.csproj /p:PackageOutputPath=.nupkgs
 before_test:
 - ps: >-
     cd RedLockNet.Tests\RedisConfig
