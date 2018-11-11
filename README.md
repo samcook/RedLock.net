@@ -1,12 +1,16 @@
-# RedLock.net [![Build status](https://ci.appveyor.com/api/projects/status/fclfbkdqy905v3xu/branch/master?svg=true)](https://ci.appveyor.com/project/samcook/redlock-net/branch/master)
+# RedLock.net
+
+[![Build status](https://ci.appveyor.com/api/projects/status/fclfbkdqy905v3xu/branch/master?svg=true)](https://ci.appveyor.com/project/samcook/redlock-net/branch/master) [![GitHub](https://img.shields.io/github/license/samcook/RedLock.net.svg)](LICENSE) [![NuGet](https://img.shields.io/nuget/dt/RedLock.net.svg)](https://www.nuget.org/packages/RedLock.net) [![GitHub release](https://img.shields.io/github/release/samcook/RedLock.net.svg?logo=github&logoColor=cccccc)](https://github.com/samcook/RedLock.net/releases) [![GitHub release](https://img.shields.io/github/release/samcook/RedLock.net/all.svg?label=pre-release&logo=github&logoColor=cccccc)](https://github.com/samcook/RedLock.net/releases)
 
 An implementation of the [Redlock distributed lock algorithm](http://redis.io/topics/distlock) in C#.
 
-Makes use of the excellent [StackExchange.Redis](https://github.com/StackExchange/StackExchange.Redis) library.
+Makes use of the excellent [StackExchange.Redis](https://stackexchange.github.io/StackExchange.Redis/) library.
 
 Distributed locks are useful for ensuring only one process is using a particular resource at any given time (even if the processes are running on different machines).
 
 RedLock.net is available using NuGet - search for [RedLock.net](https://www.nuget.org/packages/RedLock.net).
+
+*Note:* RedLock 2.2.0+ requires StackExchange.Redis 2.0+ - if you need to use StackExchange.Redis 1.x please continue to use RedLock.net 2.1.0.
 
 ## Usage
 

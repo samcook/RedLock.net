@@ -1,7 +1,7 @@
 <Project>
 	<PropertyGroup>
 		<AssemblyVersion>2.2.0.0</AssemblyVersion>
-		<Version>2.2.0-pre1</Version>
+		<Version>2.2.0</Version>
 		<FileVersion>$(Version)</FileVersion>
 		<Authors>Sam Cook</Authors>
 		<Company />
@@ -14,6 +14,8 @@
 		<RepositoryType>git</RepositoryType>
 		<PackageTags>RedLock Redis Distributed Lock</PackageTags>
 		<PackageReleaseNotes>
+			Note: RedLock 2.2.0+ requires StackExchange.Redis 2.0+ - if you need to use StackExchange.Redis 1.x please continue to use RedLock.net 2.1.0.
+
 			2.2.0 - Update to StackExchange.Redis 2.0. Switch to a single strong named package and adjust platform targets to match StackExchange.Redis 2.0.
 			2.1.0 - Add connection change events and more detailed lock status information
 			2.0.0 - .NET Core release
