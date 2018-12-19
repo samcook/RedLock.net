@@ -161,7 +161,7 @@ namespace RedLockNet.Tests
 
 				var threads = new List<Thread>();
 
-				for (var i = 0; i < 3; i++)
+				for (var i = 0; i < 2; i++)
 				{
 					var thread = new Thread(() =>
 					{
@@ -195,53 +195,6 @@ namespace RedLockNet.Tests
 
 			Assert.That(locksAcquired, Is.EqualTo(2));
 		}
-
-        [Test]
-        public void TestBlockingConcurrentLocks2()
-        {
-            var locksAcquired = 0;
-
-            using (var redisLockFactory = RedLockFactory.Create(AllActiveEndPoints, loggerFactory))
-            {
-                var resource = $"testblockingconcurrentlocks:{Guid.NewGuid()}";
-
-                var threads = new List<Thread>();
-
-                for (var i = 0; i < 3; i++)
-                {
-                    var thread = new Thread(() =>
-                    {
-                        // ReSharper disable once AccessToDisposedClosure (we join on threads before disposing)
-                        using (var redisLock = redisLockFactory.CreateLock(
-                            resource,
-                            TimeSpan.FromSeconds(2),
-                            TimeSpan.FromSeconds(3),
-                            TimeSpan.FromSeconds(0.5)))
-                        {
-                            logger.LogInformation("Entering lock");
-                            if (redisLock.IsAcquired)
-                            {
-                                Interlocked.Increment(ref locksAcquired);
-                            }
-                            //Thread.Sleep(4000);
-                            Task.Delay(2000);
-                            logger.LogInformation("Leaving lock");
-                        }
-                    });
-
-                    thread.Start();
-
-                    threads.Add(thread);
-                }
-
-                foreach (var thread in threads)
-                {
-                    thread.Join();
-                }
-            }
-
-            Assert.That(locksAcquired, Is.EqualTo(2));
-        }
 
         [Test]
         public async Task TestBlockingConcurrentNestingLocks()
