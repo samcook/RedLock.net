@@ -292,32 +292,31 @@ namespace RedLockNet.SERedis
 			var interval = expiryTime.TotalMilliseconds / 2;
 
 			logger.LogDebug($"Starting auto extend timer with {interval}ms interval");
+            var stopwatch = Stopwatch.StartNew();
 
-			lockKeepaliveTimer = new Timer(
+            lockKeepaliveTimer = new Timer(
 				state =>
 				{
 					try
 					{
 						logger.LogTrace($"Lock renewal timer fired: {Resource} ({LockId})");
 
-						var stopwatch = Stopwatch.StartNew();
+                        var extendSummary = Extend();
 
-						var extendSummary = Extend();
-
-						var validityTicks = GetRemainingValidityTicks(stopwatch);
+                        var validityTicks = GetRemainingValidityTicks(stopwatch);
 
 						if (extendSummary.Acquired >= quorum && validityTicks > 0)
 						{
-							Status = RedLockStatus.Acquired;
-							InstanceSummary = extendSummary;
-							ExtendCount++;
+                                Status = RedLockStatus.Acquired;
+                                InstanceSummary = extendSummary;
+                                ExtendCount++;
 
-							logger.LogDebug($"Extended lock, {Status} ({InstanceSummary}): {Resource} ({LockId})");
+                                logger.LogDebug($"Extended lock, {Status} ({InstanceSummary}): {Resource} ({LockId})");
 						}
-						else
-						{
-							Status = GetFailedRedLockStatus(extendSummary);
-							InstanceSummary = extendSummary;
+                        else
+                        {
+                            Status = GetFailedRedLockStatus(extendSummary);
+                            InstanceSummary = extendSummary;
 
 							logger.LogWarning($"Failed to extend lock, {Status} ({InstanceSummary}): {Resource} ({LockId})");
 						}
@@ -333,15 +332,15 @@ namespace RedLockNet.SERedis
 				(int) interval,
 				(int) interval);
 		}
-
+        
 		private long GetRemainingValidityTicks(Stopwatch sw)
 		{
-			// Add 2 milliseconds to the drift to account for Redis expires precision,
-			// which is 1 milliescond, plus 1 millisecond min drift for small TTLs.
-			var driftTicks = (long) (expiryTime.Ticks * clockDriftFactor) + TimeSpan.FromMilliseconds(2).Ticks;
-			var validityTicks = expiryTime.Ticks - sw.Elapsed.Ticks - driftTicks;
-			return validityTicks;
-		}
+            // Add 2 milliseconds to the drift to account for Redis expires precision,
+            // which is 1 milliescond, plus 1 millisecond min drift for small TTLs.
+            var driftTicks = (long)(expiryTime.Ticks * clockDriftFactor) + TimeSpan.FromMilliseconds(2).Ticks;
+            var validityTicks = expiryTime.Ticks - sw.Elapsed.Ticks - driftTicks;
+            return validityTicks;
+        }
 
 		private RedLockInstanceSummary Lock()
 		{
