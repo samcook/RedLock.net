@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using RedLockNet.SERedis.Events;
 using RedLockNet.SERedis.Internal;
 using RedLockNet.SERedis.Util;
 using StackExchange.Redis;
@@ -26,7 +27,9 @@ namespace RedLockNet.SERedis
 		private readonly double clockDriftFactor;
 		private bool isDisposed;
 
-		private Timer lockKeepaliveTimer;
+		private Timer lockKeepAliveTimer;
+
+		private RedLockStatus status;
 
 		private static readonly string UnlockScript = EmbeddedResourceLoader.GetEmbeddedResource("RedLockNet.SERedis.Lua.Unlock.lua");
 
@@ -37,9 +40,24 @@ namespace RedLockNet.SERedis
 		public string Resource { get; }
 		public string LockId { get; }
 		public bool IsAcquired => Status == RedLockStatus.Acquired;
-		public RedLockStatus Status { get; private set; }
+		public event EventHandler OnStatusChanged;
 		public RedLockInstanceSummary InstanceSummary { get; private set; }
 		public int ExtendCount { get; private set; }
+
+		public RedLockStatus Status
+		{
+			get => status;
+			private set
+			{
+				if (status == value)
+					return;
+
+				var old = status;
+				status = value;
+
+				OnStatusChanged?.Invoke(this, new RedLockStatusChangedEventArgs<RedLockStatus>(old, status));
+			}
+		}
 
 		private readonly TimeSpan expiryTime;
 		private readonly TimeSpan? waitTime;
@@ -233,12 +251,12 @@ namespace RedLockNet.SERedis
 				}
 			}
 
-			var status = GetFailedRedLockStatus(lockSummary);
+			var failedStatus = GetFailedRedLockStatus(lockSummary);
 
 			// give up
 			logger.LogDebug($"Could not acquire quorum after {quorumRetryCount} attempts, giving up: {Resource} ({LockId}). {lockSummary}.");
 
-			return (status, lockSummary);
+			return (failedStatus, lockSummary);
 		}
 
 		private async Task<(RedLockStatus, RedLockInstanceSummary)> AcquireAsync()
@@ -279,12 +297,12 @@ namespace RedLockNet.SERedis
 				}
 			}
 
-			var status = GetFailedRedLockStatus(lockSummary);
+			var failedStatus = GetFailedRedLockStatus(lockSummary);
 
 			// give up
 			logger.LogDebug($"Could not acquire quorum after {quorumRetryCount} attempts, giving up: {Resource} ({LockId}). {lockSummary}.");
 
-			return (status, lockSummary);
+			return (failedStatus, lockSummary);
 		}
 
 		private void StartAutoExtendTimer()
@@ -293,7 +311,7 @@ namespace RedLockNet.SERedis
 
 			logger.LogDebug($"Starting auto extend timer with {interval}ms interval");
 
-			lockKeepaliveTimer = new Timer(
+			lockKeepAliveTimer = new Timer(
 				state =>
 				{
 					try
@@ -565,11 +583,11 @@ namespace RedLockNet.SERedis
 			{
 				lock (lockObject)
 				{
-					if (lockKeepaliveTimer != null)
+					if (lockKeepAliveTimer != null)
 					{
-						lockKeepaliveTimer.Change(Timeout.Infinite, Timeout.Infinite);
-						lockKeepaliveTimer.Dispose();
-						lockKeepaliveTimer = null;
+						lockKeepAliveTimer.Change(Timeout.Infinite, Timeout.Infinite);
+						lockKeepAliveTimer.Dispose();
+						lockKeepAliveTimer = null;
 					}
 				}
 			}
@@ -629,14 +647,14 @@ namespace RedLockNet.SERedis
 		/// </summary>
 		internal void StopKeepAliveTimer()
 		{
-			if (lockKeepaliveTimer == null)
-			{
+			if (lockKeepAliveTimer == null)
+			{ 
 				return;
 			}
 
 			logger.LogDebug("Stopping auto extend timer");
 
-			lockKeepaliveTimer.Change(Timeout.Infinite, Timeout.Infinite);
+			lockKeepAliveTimer.Change(Timeout.Infinite, Timeout.Infinite);
 		}
 	}
 }
