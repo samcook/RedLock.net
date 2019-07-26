@@ -34,9 +34,9 @@ namespace RedLockNet
 		/// </summary>
 		int ExtendCount { get; }
 
-        /// <summary>
-        /// Triggered whenever status property changes.
-        /// </summary>
-        event EventHandler OnStatusChanged;
+		/// <summary>
+		/// Triggered whenever status property changes.
+		/// </summary>
+		event EventHandler OnStatusChanged;
 	}
 }

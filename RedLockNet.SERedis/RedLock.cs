@@ -29,7 +29,7 @@ namespace RedLockNet.SERedis
 
 		private Timer lockKeepAliveTimer;
 
-        private RedLockStatus status;
+		private RedLockStatus status;
 
 		private static readonly string UnlockScript = EmbeddedResourceLoader.GetEmbeddedResource("RedLockNet.SERedis.Lua.Unlock.lua");
 
@@ -40,26 +40,26 @@ namespace RedLockNet.SERedis
 		public string Resource { get; }
 		public string LockId { get; }
 		public bool IsAcquired => Status == RedLockStatus.Acquired;
-        public event EventHandler OnStatusChanged;
-        public RedLockInstanceSummary InstanceSummary { get; private set; }
-        public int ExtendCount { get; private set; }
+		public event EventHandler OnStatusChanged;
+		public RedLockInstanceSummary InstanceSummary { get; private set; }
+		public int ExtendCount { get; private set; }
 
-        public RedLockStatus Status
-        {
-            get => status;
-            private set
-            {
-                if (status == value)
-                    return;
+		public RedLockStatus Status
+		{
+			get => status;
+			private set
+			{
+				if (status == value)
+					return;
 
-                var old = status;
-                status = value;
+				var old = status;
+				status = value;
 
-                OnStatusChanged?.Invoke(this, new RedLockStatusChangedEventArgs<RedLockStatus>(old, status));
-            }
-        }
+				OnStatusChanged?.Invoke(this, new RedLockStatusChangedEventArgs<RedLockStatus>(old, status));
+			}
+		}
 
-        private readonly TimeSpan expiryTime;
+		private readonly TimeSpan expiryTime;
 		private readonly TimeSpan? waitTime;
 		private readonly TimeSpan? retryTime;
 		private CancellationToken cancellationToken;
@@ -112,8 +112,8 @@ namespace RedLockNet.SERedis
 			TimeSpan expiryTime,
 			TimeSpan? waitTime = null,
 			TimeSpan? retryTime = null,
-            CancellationToken? cancellationToken = null)
-        {
+			CancellationToken? cancellationToken = null)
+		{
 			var redisLock = new RedLock(
 				logger,
 				redisCaches,
@@ -135,8 +135,8 @@ namespace RedLockNet.SERedis
 			TimeSpan expiryTime,
 			TimeSpan? waitTime = null,
 			TimeSpan? retryTime = null,
-            CancellationToken? cancellationToken = null)
-        {
+			CancellationToken? cancellationToken = null)
+		{
 			var redisLock = new RedLock(
 				logger,
 				redisCaches,
@@ -656,5 +656,5 @@ namespace RedLockNet.SERedis
 
 			lockKeepAliveTimer.Change(Timeout.Infinite, Timeout.Infinite);
 		}
-    }
+	}
 }
