@@ -33,5 +33,10 @@ namespace RedLockNet
 		/// The number of times the lock has been extended.
 		/// </summary>
 		int ExtendCount { get; }
+
+        /// <summary>
+        /// Triggered whenever status property changes.
+        /// </summary>
+        event EventHandler OnStatusChanged;
 	}
 }
