@@ -102,6 +102,7 @@ namespace RedLockNet.SERedis
 				expiryTime,
 				waitTime,
 				retryTime,
+				configuration.RetryConfiguration,
 				cancellationToken ?? CancellationToken.None);
 		}
 
@@ -114,6 +115,7 @@ namespace RedLockNet.SERedis
 				expiryTime,
 				waitTime,
 				retryTime,
+				configuration.RetryConfiguration,
 				cancellationToken ?? CancellationToken.None).ConfigureAwait(false);
 		}
 

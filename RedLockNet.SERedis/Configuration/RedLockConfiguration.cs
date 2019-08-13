@@ -23,5 +23,19 @@ namespace RedLockNet.SERedis.Configuration
 
 		public RedLockConnectionProvider ConnectionProvider { get; }
 		public ILoggerFactory LoggerFactory { get; }
+		public RedLockRetryConfiguration RetryConfiguration { get; set; }
+	}
+
+	public class RedLockRetryConfiguration
+	{
+		public RedLockRetryConfiguration(int retryCount, int retryDelayMs)
+		{
+			RetryCount = retryCount;
+			RetryDelayMs = retryDelayMs;
+		}
+
+		public int RetryCount { get; }
+
+		public int RetryDelayMs { get; }
 	}
 }
