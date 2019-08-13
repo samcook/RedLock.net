@@ -21,23 +21,29 @@ namespace RedLockNet.SERedis
 		/// <summary>
 		/// Create a RedLockFactory using a list of RedLockEndPoints (ConnectionMultiplexers will be internally managed by RedLock.net)
 		/// </summary>
-		public static RedLockFactory Create(IList<RedLockEndPoint> endPoints, ILoggerFactory loggerFactory = null)
+		public static RedLockFactory Create(IList<RedLockEndPoint> endPoints, ILoggerFactory loggerFactory = null, RedLockRetryConfiguration retryConfiguration = null)
 		{
-			var configuration = new RedLockConfiguration(endPoints, loggerFactory);
+			var configuration = new RedLockConfiguration(endPoints, loggerFactory)
+			{
+				RetryConfiguration = retryConfiguration
+			};
 			return new RedLockFactory(configuration);
 		}
 
 		/// <summary>
 		/// Create a RedLockFactory using existing StackExchange.Redis ConnectionMultiplexers
 		/// </summary>
-		public static RedLockFactory Create(IList<RedLockMultiplexer> existingMultiplexers, ILoggerFactory loggerFactory = null)
+		public static RedLockFactory Create(IList<RedLockMultiplexer> existingMultiplexers, ILoggerFactory loggerFactory = null, RedLockRetryConfiguration retryConfiguration = null)
 		{
 			var configuration = new RedLockConfiguration(
 				new ExistingMultiplexersRedLockConnectionProvider
 				{
 					Multiplexers = existingMultiplexers
 				},
-				loggerFactory);
+				loggerFactory)
+			{
+				RetryConfiguration = retryConfiguration
+			};
 
 			return new RedLockFactory(configuration);
 		}
@@ -81,7 +87,8 @@ namespace RedLockNet.SERedis
 				this.loggerFactory.CreateLogger<RedLock>(),
 				redisCaches,
 				resource,
-				expiryTime);
+				expiryTime,
+				retryConfiguration: configuration.RetryConfiguration);
 		}
 
 		public async Task<IRedLock> CreateLockAsync(string resource, TimeSpan expiryTime)
@@ -90,7 +97,8 @@ namespace RedLockNet.SERedis
 				this.loggerFactory.CreateLogger<RedLock>(),
 				redisCaches,
 				resource,
-				expiryTime).ConfigureAwait(false);
+				expiryTime,
+				retryConfiguration: configuration.RetryConfiguration).ConfigureAwait(false);
 		}
 
 		public IRedLock CreateLock(string resource, TimeSpan expiryTime, TimeSpan waitTime, TimeSpan retryTime, CancellationToken? cancellationToken = null)
@@ -102,6 +110,7 @@ namespace RedLockNet.SERedis
 				expiryTime,
 				waitTime,
 				retryTime,
+				configuration.RetryConfiguration,
 				cancellationToken ?? CancellationToken.None);
 		}
 
@@ -114,6 +123,7 @@ namespace RedLockNet.SERedis
 				expiryTime,
 				waitTime,
 				retryTime,
+				configuration.RetryConfiguration,
 				cancellationToken ?? CancellationToken.None).ConfigureAwait(false);
 		}
 

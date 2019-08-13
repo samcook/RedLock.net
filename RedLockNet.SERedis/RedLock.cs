@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using RedLockNet.SERedis.Configuration;
 using RedLockNet.SERedis.Internal;
 using RedLockNet.SERedis.Util;
 using StackExchange.Redis;
@@ -56,6 +57,7 @@ namespace RedLockNet.SERedis
 			TimeSpan expiryTime,
 			TimeSpan? waitTime = null,
 			TimeSpan? retryTime = null,
+			RedLockRetryConfiguration retryConfiguration = null,
 			CancellationToken? cancellationToken = null)
 		{
 			this.logger = logger;
@@ -75,8 +77,8 @@ namespace RedLockNet.SERedis
 			this.redisCaches = redisCaches;
 
 			quorum = redisCaches.Count / 2 + 1;
-			quorumRetryCount = 3;
-			quorumRetryDelayMs = 400;
+			quorumRetryCount = retryConfiguration?.RetryCount ?? 3;
+			quorumRetryDelayMs = retryConfiguration?.RetryDelayMs ?? 400;
 			clockDriftFactor = 0.01;
 
 			Resource = resource;
@@ -94,6 +96,7 @@ namespace RedLockNet.SERedis
 			TimeSpan expiryTime,
 			TimeSpan? waitTime = null,
 			TimeSpan? retryTime = null,
+			RedLockRetryConfiguration retryConfiguration = null,
 			CancellationToken? cancellationToken = null)
 		{
 			var redisLock = new RedLock(
@@ -103,6 +106,7 @@ namespace RedLockNet.SERedis
 				expiryTime,
 				waitTime,
 				retryTime,
+				retryConfiguration,
 				cancellationToken);
 
 			redisLock.Start();
@@ -117,6 +121,7 @@ namespace RedLockNet.SERedis
 			TimeSpan expiryTime,
 			TimeSpan? waitTime = null,
 			TimeSpan? retryTime = null,
+			RedLockRetryConfiguration retryConfiguration = null,
 			CancellationToken? cancellationToken = null)
 		{
 			var redisLock = new RedLock(
@@ -126,6 +131,7 @@ namespace RedLockNet.SERedis
 				expiryTime,
 				waitTime,
 				retryTime,
+				retryConfiguration,
 				cancellationToken);
 
 			await redisLock.StartAsync().ConfigureAwait(false);
