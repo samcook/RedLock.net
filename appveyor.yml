@@ -10,7 +10,7 @@ build:
   verbosity: normal
 after_build:
 - cmd: >-
-    dotnet pack --no-build -c Release RedLockNet.SERedis\RedLockNet.SERedis.csproj /p:PackageOutputPath=.nupkgs
+    dotnet pack -c Release RedLockNet.SERedis\RedLockNet.SERedis.csproj /p:PackageOutputPath=.nupkgs
 before_test:
 - ps: >-
     cd RedLockNet.Tests\RedisConfig
