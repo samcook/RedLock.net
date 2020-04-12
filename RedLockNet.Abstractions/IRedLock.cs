@@ -2,7 +2,7 @@
 
 namespace RedLockNet
 {
-	public interface IRedLock : IDisposable
+	public interface IRedLock : IDisposable, IAsyncDisposable
 	{
 		/// <summary>
 		/// The name of the resource the lock is for.

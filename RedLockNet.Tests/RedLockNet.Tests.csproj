@@ -1,18 +1,22 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFrameworks>net461;net472;netcoreapp2.0</TargetFrameworks>
+		<TargetFrameworks>net461;net472;netcoreapp2.1</TargetFrameworks>
 		<AssemblyName>RedLockNet.Tests</AssemblyName>
 		<RootNamespace>RedLockNet.Tests</RootNamespace>
 		<SignAssembly>True</SignAssembly>
 		<AssemblyOriginatorKeyFile>..\RedLock.snk</AssemblyOriginatorKeyFile>
+		<LangVersion>latest</LangVersion>
 	</PropertyGroup>
 
 	<ItemGroup>
 		<PackageReference Include="JetBrains.Annotations" Version="10.4.0" />
-		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.0.0" />
-		<PackageReference Include="NUnit" Version="3.7.1" />
-		<PackageReference Include="NUnit3TestAdapter" Version="3.8.0-alpha1" />
+		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.5.0" />
+		<PackageReference Include="NUnit" Version="3.12.0" />
+		<PackageReference Include="NUnit3TestAdapter" Version="3.16.1">
+		  <PrivateAssets>all</PrivateAssets>
+		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
 		<PackageReference Include="Redis-64" Version="3.0.503" />
 
 		<PackageReference Include="Microsoft.Extensions.Logging.Console" Version="[2.0.0,)" />
