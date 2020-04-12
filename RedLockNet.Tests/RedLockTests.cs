@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Net;
-using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
@@ -102,6 +101,14 @@ namespace RedLockNet.Tests
 		}
 
 		[Test]
+		public async Task TestSingleLockAsync()
+		{
+			await CheckSingleRedisLockAsync(
+				() => RedLockFactory.Create(SomeActiveEndPointsWithQuorum, loggerFactory),
+				RedLockStatus.Acquired);
+		}
+
+		[Test]
 		public void TestOverlappingLocks()
 		{
 			using (var redisLockFactory = RedLockFactory.Create(AllActiveEndPoints, loggerFactory))
@@ -137,11 +144,11 @@ namespace RedLockNet.Tests
 			{
 				var resource = $"testredislock:{Guid.NewGuid()}";
 
-				using (var firstLock = await redisLockFactory.CreateLockAsync(resource, TimeSpan.FromSeconds(30)))
+				await using (var firstLock = await redisLockFactory.CreateLockAsync(resource, TimeSpan.FromSeconds(30)))
 				{
 					Assert.That(firstLock.IsAcquired, Is.True);
 
-					using (var secondLock = await redisLockFactory.CreateLockAsync(resource, TimeSpan.FromSeconds(30)))
+					await using (var secondLock = await redisLockFactory.CreateLockAsync(resource, TimeSpan.FromSeconds(30)))
 					{
 						Assert.That(secondLock.IsAcquired, Is.False);
 						Assert.That(secondLock.Status, Is.EqualTo(RedLockStatus.Conflicted));
@@ -402,7 +409,21 @@ namespace RedLockNet.Tests
 				}
 			}
 		}
-		
+
+		private static async Task CheckSingleRedisLockAsync([InstantHandle]Func<RedLockFactory> factoryBuilder, RedLockStatus expectedStatus)
+		{
+			using (var redisLockFactory = factoryBuilder())
+			{
+				var resource = $"testredislock:{Guid.NewGuid()}";
+
+				await using (var redisLock = await redisLockFactory.CreateLockAsync(resource, TimeSpan.FromSeconds(30)))
+				{
+					Assert.That(redisLock.IsAcquired, Is.EqualTo(expectedStatus == RedLockStatus.Acquired));
+					Assert.That(redisLock.Status, Is.EqualTo(expectedStatus));
+				}
+			}
+		}
+
 		[Test]
 		public void TestCancelBlockingLock()
 		{
@@ -483,7 +504,7 @@ namespace RedLockNet.Tests
 				// warmup
 				for (var i = 0; i < 10; i++)
 				{
-					using (await redisLockFactory.CreateLockAsync(resource, TimeSpan.FromSeconds(30)))
+					await using (await redisLockFactory.CreateLockAsync(resource, TimeSpan.FromSeconds(30)))
 					{
 					}
 				}
@@ -497,7 +518,7 @@ namespace RedLockNet.Tests
 				{
 					sw.Restart();
 
-					using (var redisLock = await redisLockFactory.CreateLockAsync(resource, TimeSpan.FromSeconds(30)))
+					await using (var redisLock = await redisLockFactory.CreateLockAsync(resource, TimeSpan.FromSeconds(30)))
 					{
 						sw.Stop();
 

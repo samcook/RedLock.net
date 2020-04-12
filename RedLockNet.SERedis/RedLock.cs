@@ -617,18 +617,37 @@ namespace RedLockNet.SERedis
 
 			if (disposing)
 			{
-				lock (lockObject)
-				{
-					if (lockKeepaliveTimer != null)
-					{
-						lockKeepaliveTimer.Change(Timeout.Infinite, Timeout.Infinite);
-						lockKeepaliveTimer.Dispose();
-						lockKeepaliveTimer = null;
-					}
-				}
+				StopKeepAliveTimer();
 			}
 
 			Unlock();
+
+			Status = RedLockStatus.Unlocked;
+			InstanceSummary = new RedLockInstanceSummary();
+
+			isDisposed = true;
+		}
+
+		public ValueTask DisposeAsync()
+		{
+			return DisposeAsync(true);
+		}
+
+		protected virtual async ValueTask DisposeAsync(bool disposing)
+		{
+			logger.LogDebug($"Disposing {Resource} ({LockId})");
+
+			if (isDisposed)
+			{
+				return;
+			}
+
+			if (disposing)
+			{
+				StopKeepAliveTimer();
+			}
+
+			await UnlockAsync().ConfigureAwait(false);
 
 			Status = RedLockStatus.Unlocked;
 			InstanceSummary = new RedLockInstanceSummary();
@@ -678,19 +697,17 @@ namespace RedLockNet.SERedis
 			return new RedLockInstanceSummary(acquired, conflicted, error);
 		}
 
-		/// <summary>
-		/// For unit tests only, do not use in normal operation
-		/// </summary>
 		internal void StopKeepAliveTimer()
 		{
-			if (lockKeepaliveTimer == null)
+			lock (lockObject)
 			{
-				return;
+				if (lockKeepaliveTimer != null)
+				{
+					lockKeepaliveTimer.Change(Timeout.Infinite, Timeout.Infinite);
+					lockKeepaliveTimer.Dispose();
+					lockKeepaliveTimer = null;
+				}
 			}
-
-			logger.LogDebug("Stopping auto extend timer");
-
-			lockKeepaliveTimer.Change(Timeout.Infinite, Timeout.Infinite);
 		}
 	}
 }
