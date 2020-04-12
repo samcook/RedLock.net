@@ -593,7 +593,12 @@ namespace RedLockNet.SERedis
 				result.Append("), ");
 			}
 
-			return result.ToString().TrimEnd(' ', ',');
+			if (result.Length >= 2)
+			{
+				result.Remove(result.Length - 2, 2);
+			}
+
+			return result.ToString();
 		}
 
 		public void Dispose()
