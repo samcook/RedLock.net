@@ -6,10 +6,11 @@
 		<Authors>Sam Cook</Authors>
 		<Company />
 		<Product>RedLock.net</Product>
-		<Copyright>Copyright 2018 Sam Cook</Copyright>
-		<PackageLicenseUrl>https://github.com/samcook/RedLock.net/blob/master/LICENSE</PackageLicenseUrl>
+		<Copyright>Copyright $([System.DateTime]::Now.Year) Sam Cook</Copyright>
+		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<PackageProjectUrl>https://github.com/samcook/RedLock.net</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/samcook/RedLock.net</RepositoryUrl>
+		<PackageIcon>redlock-icon.png</PackageIcon>
 		<PackageIconUrl>https://raw.githubusercontent.com/samcook/RedLock.net/master/redlock-icon.png</PackageIconUrl>
 		<RepositoryType>git</RepositoryType>
 		<PackageTags>RedLock Redis Distributed Lock</PackageTags>

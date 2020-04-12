@@ -16,4 +16,8 @@
 	  <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="1.1.0" />
 	</ItemGroup>
 
+	<ItemGroup>
+		<None Include="..\redlock-icon.png" Link="redlock-icon.png" Pack="true" Visible="false" PackagePath="" />
+	</ItemGroup>
+
 </Project>

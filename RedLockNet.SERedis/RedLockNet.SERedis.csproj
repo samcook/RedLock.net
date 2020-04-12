@@ -25,6 +25,10 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <None Include="..\redlock-icon.png" Link="redlock-icon.png" Pack="true" Visible="false" PackagePath="" />
+	</ItemGroup>
+
+	<ItemGroup>
 	  <EmbeddedResource Include="Lua\Extend.lua" />
 	  <EmbeddedResource Include="Lua\Unlock.lua" />
 	</ItemGroup>
