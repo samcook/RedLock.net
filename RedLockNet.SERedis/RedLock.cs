@@ -16,9 +16,8 @@ namespace RedLockNet.SERedis
 	public class RedLock : IRedLock
 	{
 		private readonly object lockObject = new object();
-		private readonly object extendUnlockObject = new object(); //for consistency between lock extension and unlocking. 
-		private readonly CancellationTokenSource ctSource = new CancellationTokenSource();  
-		private readonly CancellationToken innerToken;
+		private readonly SemaphoreSlim extendUnlockSemaphore = new SemaphoreSlim(1, 1);
+		private readonly CancellationTokenSource unlockCancellationTokenSource = new CancellationTokenSource();  
 
 		private readonly ICollection<RedisConnection> redisCaches;
 		private readonly ILogger<RedLock> logger;
@@ -88,7 +87,6 @@ namespace RedLockNet.SERedis
 			this.waitTime = waitTime;
 			this.retryTime = retryTime;
 			this.cancellationToken = cancellationToken ?? CancellationToken.None;
-			this.innerToken = this.ctSource.Token;
 		}
 
 		internal static RedLock Create(
@@ -304,21 +302,26 @@ namespace RedLockNet.SERedis
 				(int) interval);
 		}
 		
-		
 		private void ExtendLockLifetime()
 		{
-			lock (extendUnlockObject)
+			try
 			{
+				var gotSemaphore = extendUnlockSemaphore.Wait(0, unlockCancellationTokenSource.Token);
 				try
 				{
+					if (!gotSemaphore)
+					{
+						// another extend operation is still running, so skip this one
+						logger.LogWarning($"Lock renewal skipped due to another renewal still running: {Resource} ({LockId})");
+						return;
+					}
+
 					logger.LogTrace($"Lock renewal timer fired: {Resource} ({LockId})");
 
 					var stopwatch = Stopwatch.StartNew();
 
-					ThrowIfCancel();
 					var extendSummary = Extend();
 
-					ThrowIfCancel();
 					var validityTicks = GetRemainingValidityTicks(stopwatch);
 
 					if (extendSummary.Acquired >= quorum && validityTicks > 0)
@@ -343,6 +346,17 @@ namespace RedLockNet.SERedis
 					var message = $"Lock renewal timer thread failed: {Resource} ({LockId})";
 					logger.LogError(null, exception, message);
 				}
+				finally
+				{
+					if (gotSemaphore)
+					{
+						extendUnlockSemaphore.Release();
+					}
+				}
+			}
+			catch (OperationCanceledException)
+			{
+				// unlock has been called, don't extend
 			}
 		}
 		
@@ -391,17 +405,36 @@ namespace RedLockNet.SERedis
 
 		private void Unlock()
 		{
-			lock (extendUnlockObject)//waiting until the timer stops.
+			unlockCancellationTokenSource.Cancel();
+
+			// ReSharper disable once MethodSupportsCancellation
+			extendUnlockSemaphore.Wait();
+			try
 			{
 				Parallel.ForEach(redisCaches, UnlockInstance);
+			}
+			finally
+			{
+				extendUnlockSemaphore.Release();
 			}
 		}
 
 		private async Task UnlockAsync()
 		{
-			var unlockTasks = redisCaches.Select(UnlockInstanceAsync);
+			unlockCancellationTokenSource.Cancel();
 
-			await TaskUtils.WhenAll(unlockTasks).ConfigureAwait(false);
+			// ReSharper disable once MethodSupportsCancellation
+			await extendUnlockSemaphore.WaitAsync().ConfigureAwait(false);
+			try
+			{
+				var unlockTasks = redisCaches.Select(UnlockInstanceAsync);
+
+				await TaskUtils.WhenAll(unlockTasks).ConfigureAwait(false);
+			}
+			finally
+			{
+				extendUnlockSemaphore.Release();
+			}
 		}
 
 		private RedLockInstanceResult LockInstance(RedisConnection cache)
@@ -463,7 +496,6 @@ namespace RedLockNet.SERedis
 
 		private RedLockInstanceResult ExtendInstance(RedisConnection cache)
 		{
-			ThrowIfCancel();
 			var redisKey = GetRedisKey(cache.RedisKeyFormat, Resource);
 			var host = GetHost(cache.ConnectionMultiplexer);
 
@@ -472,7 +504,6 @@ namespace RedLockNet.SERedis
 			try
 			{
 				logger.LogTrace($"ExtendInstance enter {host}: {redisKey}, {LockId}, {expiryTime}");
-				ThrowIfCancel();
 				
 				// Returns 1 on success, 0 on failure setting expiry or key not existing, -1 if the key value didn't match
 				var extendResult = (long) cache.ConnectionMultiplexer
@@ -495,12 +526,6 @@ namespace RedLockNet.SERedis
 			return result;
 		}
 		
-		private void ThrowIfCancel()
-		{
-			cancellationToken.ThrowIfCancellationRequested();
-			innerToken.ThrowIfCancellationRequested();
-		}
-
 		private void UnlockInstance(RedisConnection cache)
 		{
 			var redisKey = GetRedisKey(cache.RedisKeyFormat, Resource);
@@ -587,8 +612,6 @@ namespace RedLockNet.SERedis
 
 			if (disposing)
 			{
-				ctSource.Cancel();
-				
 				lock (lockObject)
 				{
 					if (lockKeepaliveTimer != null)
