@@ -16,6 +16,8 @@ namespace RedLockNet.SERedis
 	public class RedLock : IRedLock
 	{
 		private readonly object lockObject = new object();
+		private readonly SemaphoreSlim extendUnlockSemaphore = new SemaphoreSlim(1, 1);
+		private readonly CancellationTokenSource unlockCancellationTokenSource = new CancellationTokenSource();  
 
 		private readonly ICollection<RedisConnection> redisCaches;
 		private readonly ILogger<RedLock> logger;
@@ -294,45 +296,70 @@ namespace RedLockNet.SERedis
 			logger.LogDebug($"Starting auto extend timer with {interval}ms interval");
 
 			lockKeepaliveTimer = new Timer(
-				state =>
-				{
-					try
-					{
-						logger.LogTrace($"Lock renewal timer fired: {Resource} ({LockId})");
-
-						var stopwatch = Stopwatch.StartNew();
-
-						var extendSummary = Extend();
-
-						var validityTicks = GetRemainingValidityTicks(stopwatch);
-
-						if (extendSummary.Acquired >= quorum && validityTicks > 0)
-						{
-							Status = RedLockStatus.Acquired;
-							InstanceSummary = extendSummary;
-							ExtendCount++;
-
-							logger.LogDebug($"Extended lock, {Status} ({InstanceSummary}): {Resource} ({LockId})");
-						}
-						else
-						{
-							Status = GetFailedRedLockStatus(extendSummary);
-							InstanceSummary = extendSummary;
-
-							logger.LogWarning($"Failed to extend lock, {Status} ({InstanceSummary}): {Resource} ({LockId})");
-						}
-					}
-					catch (Exception exception)
-					{
-						// All we can do here is log the exception and swallow it.
-						var message = $"Lock renewal timer thread failed: {Resource} ({LockId})";
-						logger.LogError(null, exception, message);
-					}
-				},
+				state => { ExtendLockLifetime(); },
 				null,
 				(int) interval,
 				(int) interval);
 		}
+		
+		private void ExtendLockLifetime()
+		{
+			try
+			{
+				var gotSemaphore = extendUnlockSemaphore.Wait(0, unlockCancellationTokenSource.Token);
+				try
+				{
+					if (!gotSemaphore)
+					{
+						// another extend operation is still running, so skip this one
+						logger.LogWarning($"Lock renewal skipped due to another renewal still running: {Resource} ({LockId})");
+						return;
+					}
+
+					logger.LogTrace($"Lock renewal timer fired: {Resource} ({LockId})");
+
+					var stopwatch = Stopwatch.StartNew();
+
+					var extendSummary = Extend();
+
+					var validityTicks = GetRemainingValidityTicks(stopwatch);
+
+					if (extendSummary.Acquired >= quorum && validityTicks > 0)
+					{
+						Status = RedLockStatus.Acquired;
+						InstanceSummary = extendSummary;
+						ExtendCount++;
+
+						logger.LogDebug($"Extended lock, {Status} ({InstanceSummary}): {Resource} ({LockId})");
+					}
+					else
+					{
+						Status = GetFailedRedLockStatus(extendSummary);
+						InstanceSummary = extendSummary;
+
+						logger.LogWarning($"Failed to extend lock, {Status} ({InstanceSummary}): {Resource} ({LockId})");
+					}
+				}
+				catch (Exception exception)
+				{
+					// All we can do here is log the exception and swallow it.
+					var message = $"Lock renewal timer thread failed: {Resource} ({LockId})";
+					logger.LogError(null, exception, message);
+				}
+				finally
+				{
+					if (gotSemaphore)
+					{
+						extendUnlockSemaphore.Release();
+					}
+				}
+			}
+			catch (OperationCanceledException)
+			{
+				// unlock has been called, don't extend
+			}
+		}
+		
 
 		private long GetRemainingValidityTicks(Stopwatch sw)
 		{
@@ -378,14 +405,36 @@ namespace RedLockNet.SERedis
 
 		private void Unlock()
 		{
-			Parallel.ForEach(redisCaches, UnlockInstance);
+			unlockCancellationTokenSource.Cancel();
+
+			// ReSharper disable once MethodSupportsCancellation
+			extendUnlockSemaphore.Wait();
+			try
+			{
+				Parallel.ForEach(redisCaches, UnlockInstance);
+			}
+			finally
+			{
+				extendUnlockSemaphore.Release();
+			}
 		}
 
 		private async Task UnlockAsync()
 		{
-			var unlockTasks = redisCaches.Select(UnlockInstanceAsync);
+			unlockCancellationTokenSource.Cancel();
 
-			await TaskUtils.WhenAll(unlockTasks).ConfigureAwait(false);
+			// ReSharper disable once MethodSupportsCancellation
+			await extendUnlockSemaphore.WaitAsync().ConfigureAwait(false);
+			try
+			{
+				var unlockTasks = redisCaches.Select(UnlockInstanceAsync);
+
+				await TaskUtils.WhenAll(unlockTasks).ConfigureAwait(false);
+			}
+			finally
+			{
+				extendUnlockSemaphore.Release();
+			}
 		}
 
 		private RedLockInstanceResult LockInstance(RedisConnection cache)
@@ -476,7 +525,7 @@ namespace RedLockNet.SERedis
 
 			return result;
 		}
-
+		
 		private void UnlockInstance(RedisConnection cache)
 		{
 			var redisKey = GetRedisKey(cache.RedisKeyFormat, Resource);
