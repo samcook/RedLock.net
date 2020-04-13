@@ -26,7 +26,8 @@ namespace RedLockNet.SERedis
 		private readonly int quorum;
 		private readonly int quorumRetryCount;
 		private readonly int quorumRetryDelayMs;
-		private readonly double clockDriftFactor;
+		private const double ClockDriftFactor = 0.01;
+		private static readonly long ClockPrecisionPaddingTicks = TimeSpan.FromMilliseconds(2).Ticks;
 		private bool isDisposed;
 
 		private Timer lockKeepaliveTimer;
@@ -49,8 +50,11 @@ namespace RedLockNet.SERedis
 		private readonly TimeSpan? retryTime;
 		private CancellationToken cancellationToken;
 
-		private readonly TimeSpan minimumExpiryTime = TimeSpan.FromMilliseconds(10);
-		private readonly TimeSpan minimumRetryTime = TimeSpan.FromMilliseconds(10);
+		private static readonly TimeSpan MinimumExpiryTime = TimeSpan.FromMilliseconds(10);
+		private static readonly TimeSpan MinimumRetryTime = TimeSpan.FromMilliseconds(10);
+
+		private const int DefaultQuorumRetryCount = 3;
+		private const int DefaultQuorumRetryDelayMs = 400;
 
 		private RedLock(
 			ILogger<RedLock> logger,
@@ -64,24 +68,23 @@ namespace RedLockNet.SERedis
 		{
 			this.logger = logger;
 
-			if (expiryTime < minimumExpiryTime)
+			if (expiryTime < MinimumExpiryTime)
 			{
-				logger.LogWarning($"Expiry time {expiryTime.TotalMilliseconds}ms too low, setting to {minimumExpiryTime.TotalMilliseconds}ms");
-				expiryTime = minimumExpiryTime;
+				logger.LogWarning($"Expiry time {expiryTime.TotalMilliseconds}ms too low, setting to {MinimumExpiryTime.TotalMilliseconds}ms");
+				expiryTime = MinimumExpiryTime;
 			}
 
-			if (retryTime != null && retryTime.Value < minimumRetryTime)
+			if (retryTime != null && retryTime.Value < MinimumRetryTime)
 			{
-				logger.LogWarning($"Retry time {retryTime.Value.TotalMilliseconds}ms too low, setting to {minimumRetryTime.TotalMilliseconds}ms");
-				retryTime = minimumRetryTime;
+				logger.LogWarning($"Retry time {retryTime.Value.TotalMilliseconds}ms too low, setting to {MinimumRetryTime.TotalMilliseconds}ms");
+				retryTime = MinimumRetryTime;
 			}
 
 			this.redisCaches = redisCaches;
 
 			quorum = redisCaches.Count / 2 + 1;
-			quorumRetryCount = retryConfiguration?.RetryCount ?? 3;
-			quorumRetryDelayMs = retryConfiguration?.RetryDelayMs ?? 400;
-			clockDriftFactor = 0.01;
+			quorumRetryCount = retryConfiguration?.RetryCount ?? DefaultQuorumRetryCount;
+			quorumRetryDelayMs = retryConfiguration?.RetryDelayMs ?? DefaultQuorumRetryDelayMs;
 
 			Resource = resource;
 			LockId = Guid.NewGuid().ToString();
@@ -371,7 +374,7 @@ namespace RedLockNet.SERedis
 		{
 			// Add 2 milliseconds to the drift to account for Redis expires precision,
 			// which is 1 milliescond, plus 1 millisecond min drift for small TTLs.
-			var driftTicks = (long) (expiryTime.Ticks * clockDriftFactor) + TimeSpan.FromMilliseconds(2).Ticks;
+			var driftTicks = (long) (expiryTime.Ticks * ClockDriftFactor) + ClockPrecisionPaddingTicks;
 			var validityTicks = expiryTime.Ticks - sw.Elapsed.Ticks - driftTicks;
 			return validityTicks;
 		}
