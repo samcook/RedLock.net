@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Security.Authentication;
 
 namespace RedLockNet.SERedis.Configuration
 {
@@ -60,6 +61,12 @@ namespace RedLockNet.SERedis.Configuration
 		/// Whether to use SSL for the redis connection.
 		/// </summary>
 		public bool Ssl { get; set; }
+
+		/// <summary>
+		/// The allowed SSL/TLS protocols for the redis connection.
+		/// Defaults to a value chosen by .NET framework if not specified.
+		/// </summary>
+		public SslProtocols? SslProtocols { get; set; }
 
 		/// <summary>
 		/// The password for the redis connection.
