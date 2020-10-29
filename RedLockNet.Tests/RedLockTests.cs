@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Net;
 using System.Reflection;
+using System.Security.Authentication;
 using System.Threading;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
@@ -366,6 +367,22 @@ namespace RedLockNet.Tests
 			{
 				EndPoint = new DnsEndPoint("localhost", 6383),
 				Ssl = true
+			};
+
+			CheckSingleRedisLock(
+				() => RedLockFactory.Create(new List<RedLockEndPoint> { endPoint }, loggerFactory),
+				RedLockStatus.Acquired);
+		}
+
+		[Test]
+		[Ignore("Requires a redis server that supports SSL and TLS 1.2")]
+		public void TestSslWithProtocolConnection()
+		{
+			var endPoint = new RedLockEndPoint
+			{
+				EndPoint = new DnsEndPoint("localhost", 6383),
+				Ssl = true,
+				SslProtocols = SslProtocols.Tls12
 			};
 
 			CheckSingleRedisLock(

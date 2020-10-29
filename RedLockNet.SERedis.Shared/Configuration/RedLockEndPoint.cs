@@ -64,7 +64,7 @@ namespace RedLockNet.SERedis.Configuration
 
 		/// <summary>
 		/// The allowed SSL/TLS protocols for the redis connection.
-		/// Defaults to a value chosen by .NET framework if not specified.
+		/// Defaults to a value chosen by .NET if not specified.
 		/// </summary>
 		public SslProtocols? SslProtocols { get; set; }
 
