@@ -35,7 +35,7 @@
 
 	<ItemGroup>
 		<PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="1.1.0" />
-		<PackageReference Include="StackExchange.Redis" Version="[2.0.513,)" />
+		<PackageReference Include="StackExchange.Redis" Version="[2.2.4,)" />
 		<PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[2.0.0,)" />
 		<PackageReference Include="Microsoft.Extensions.Logging" Version="[2.0.0,)" />
 	</ItemGroup>
