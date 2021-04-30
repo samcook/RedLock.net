@@ -588,7 +588,7 @@ namespace RedLockNet.SERedis
 
 				result.Append(server.EndPoint.GetFriendlyName());
 				result.Append(" (");
-				result.Append(server.IsSlave ? "slave" : "master");
+				result.Append(server.IsReplica ? "slave" : "master");
 				result.Append(server.IsConnected ? "" : ", disconnected");
 				result.Append("), ");
 			}
