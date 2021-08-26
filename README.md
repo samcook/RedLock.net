@@ -56,7 +56,7 @@ If you require more detailed configuration for the redis instances you are conne
 var resource = "the-thing-we-are-locking-on";
 var expiry = TimeSpan.FromSeconds(30);
 
-using (var redLock = await redlockFactory.CreateLockAsync(resource, expiry)) // there are also non async Create() methods
+await using (var redLock = await redlockFactory.CreateLockAsync(resource, expiry)) // there are also non async Create() methods
 {
 	// make sure we got the lock
 	if (redLock.IsAcquired)
@@ -75,7 +75,7 @@ var wait = TimeSpan.FromSeconds(10);
 var retry = TimeSpan.FromSeconds(1);
 
 // blocks until acquired or 'wait' timeout
-using (var redLock = await redlockFactory.CreateLockAsync(resource, expiry, wait, retry)) // there are also non async Create() methods
+await using (var redLock = await redlockFactory.CreateLockAsync(resource, expiry, wait, retry)) // there are also non async Create() methods
 {
 	// make sure we got the lock
 	if (redLock.IsAcquired)
