@@ -48,6 +48,7 @@ namespace RedLockNet.SERedis.Configuration
 					ConnectTimeout = endPoint.ConnectionTimeout ?? DefaultConnectionTimeout,
 					SyncTimeout = endPoint.SyncTimeout ?? DefaultSyncTimeout,
 					Ssl = endPoint.Ssl,
+					SslProtocols = endPoint.SslProtocols,
 					Password = endPoint.Password,
 					ConfigCheckSeconds = endPoint.ConfigCheckSeconds ?? DefaultConfigCheckSeconds
 				};
