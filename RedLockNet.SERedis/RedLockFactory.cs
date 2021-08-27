@@ -21,7 +21,15 @@ namespace RedLockNet.SERedis
 		/// <summary>
 		/// Create a RedLockFactory using a list of RedLockEndPoints (ConnectionMultiplexers will be internally managed by RedLock.net)
 		/// </summary>
-		public static RedLockFactory Create(IList<RedLockEndPoint> endPoints, ILoggerFactory loggerFactory = null, RedLockRetryConfiguration retryConfiguration = null)
+		public static RedLockFactory Create(IList<RedLockEndPoint> endPoints, ILoggerFactory loggerFactory = null)
+		{
+			return Create(endPoints, null, loggerFactory);
+		}
+
+		/// <summary>
+		/// Create a RedLockFactory using a list of RedLockEndPoints (ConnectionMultiplexers will be internally managed by RedLock.net)
+		/// </summary>
+		public static RedLockFactory Create(IList<RedLockEndPoint> endPoints, RedLockRetryConfiguration retryConfiguration, ILoggerFactory loggerFactory = null)
 		{
 			var configuration = new RedLockConfiguration(endPoints, loggerFactory)
 			{
@@ -33,7 +41,15 @@ namespace RedLockNet.SERedis
 		/// <summary>
 		/// Create a RedLockFactory using existing StackExchange.Redis ConnectionMultiplexers
 		/// </summary>
-		public static RedLockFactory Create(IList<RedLockMultiplexer> existingMultiplexers, ILoggerFactory loggerFactory = null, RedLockRetryConfiguration retryConfiguration = null)
+		public static RedLockFactory Create(IList<RedLockMultiplexer> existingMultiplexers, ILoggerFactory loggerFactory = null)
+		{
+			return Create(existingMultiplexers, null, loggerFactory);
+		}
+
+		/// <summary>
+		/// Create a RedLockFactory using existing StackExchange.Redis ConnectionMultiplexers
+		/// </summary>
+		public static RedLockFactory Create(IList<RedLockMultiplexer> existingMultiplexers, RedLockRetryConfiguration retryConfiguration, ILoggerFactory loggerFactory = null)
 		{
 			var configuration = new RedLockConfiguration(
 				new ExistingMultiplexersRedLockConnectionProvider
