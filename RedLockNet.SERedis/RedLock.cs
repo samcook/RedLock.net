@@ -366,7 +366,7 @@ namespace RedLockNet.SERedis
 			catch (OperationCanceledException)
 			{
 				// unlock has been called, don't extend
-                Status = RedLockStatus.ExtensionCanceled;
+				Status = RedLockStatus.ExtensionCanceled;
 				StopKeepAliveTimer();
             }
 		}
