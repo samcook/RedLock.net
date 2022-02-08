@@ -25,6 +25,11 @@
 		/// <summary>
 		/// The lock expiry time passed before lock acquisition could be completed.
 		/// </summary>
-		Expired
+		Expired,
+
+		/// <summary>
+		/// The lock extension is canceled.
+		/// </summary>
+		ExtensionCanceled,
 	}
 }
