@@ -26,7 +26,11 @@ namespace RedLockNet.Tests
 		{
 			ThreadPool.SetMinThreads(100, 100);
 
-			loggerFactory = new LoggerFactory().AddConsole(LogLevel.Debug);
+			loggerFactory = LoggerFactory.Create(b => b.AddSimpleConsole(opts =>
+			{
+				opts.TimestampFormat = "HH:mm:ss.ffff ";
+				opts.SingleLine = true;
+			}).SetMinimumLevel(LogLevel.Debug));
 			logger = loggerFactory.CreateLogger<RedLockTests>();
 		}
 
@@ -243,6 +247,47 @@ namespace RedLockNet.Tests
 
 				Assert.That(extendCount, Is.GreaterThan(2));
 			}
+		}
+
+		[Test]
+		public async Task TestContendedExtendCancellation()
+		{
+			using (var redisLockFactory = RedLockFactory.Create(new List<RedLockEndPoint> { ActiveServer1 }, loggerFactory))
+			{
+				var resource = $"testcontendedlock:{Guid.NewGuid()}";
+
+				var tasks = new List<Task>();
+
+				tasks.Add(Task.Run(() => ContendedSleep(redisLockFactory, resource, 1, TimeSpan.FromSeconds(2))));
+
+				// sleep for just shorter than the duration of the previous lock, so that the second lock should fail to be acquired on the first attempt but successfully acquired on a retry
+				await Task.Delay(TimeSpan.FromSeconds(1.99));
+
+				tasks.Add(Task.Run(() => ContendedSleep(redisLockFactory, resource, 2, TimeSpan.FromSeconds(2))));
+
+				await Task.WhenAll(tasks);
+			}
+		}
+
+		private async Task ContendedSleep(RedLockFactory redisLockFactory, string resource, int i, TimeSpan duration)
+		{
+			logger.LogInformation("Starting task {i}", i);
+
+			IRedLock redlock;
+			var acquired = false;
+			await using (redlock = await redisLockFactory.CreateLockAsync(resource, duration))
+			{
+				if (redlock.IsAcquired)
+				{
+					acquired = true;
+					await Task.Delay(duration);
+				}
+			}
+
+			logger.LogInformation("Ending task {i}, acquired: {acquired}, extendCount: {extendCount}", i, acquired, redlock.ExtendCount);
+
+			Assert.That(acquired, Is.True);
+			Assert.That(redlock.ExtendCount, Is.GreaterThanOrEqualTo(1));
 		}
 
 		[Test]
