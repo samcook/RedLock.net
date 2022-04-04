@@ -366,9 +366,9 @@ namespace RedLockNet.SERedis
 			catch (OperationCanceledException)
 			{
 				// unlock has been called, don't extend
+				logger.LogDebug($"Lock renewal cancelled: {Resource} ({LockId})");
 			}
 		}
-		
 
 		private long GetRemainingValidityTicks(Stopwatch sw)
 		{
@@ -414,8 +414,6 @@ namespace RedLockNet.SERedis
 
 		private void Unlock()
 		{
-			unlockCancellationTokenSource.Cancel();
-
 			// ReSharper disable once MethodSupportsCancellation
 			extendUnlockSemaphore.Wait();
 			try
@@ -430,8 +428,6 @@ namespace RedLockNet.SERedis
 
 		private async Task UnlockAsync()
 		{
-			unlockCancellationTokenSource.Cancel();
-
 			// ReSharper disable once MethodSupportsCancellation
 			await extendUnlockSemaphore.WaitAsync().ConfigureAwait(false);
 			try
@@ -629,6 +625,7 @@ namespace RedLockNet.SERedis
 				StopKeepAliveTimer();
 			}
 
+			unlockCancellationTokenSource.Cancel();
 			Unlock();
 
 			Status = RedLockStatus.Unlocked;
@@ -656,6 +653,7 @@ namespace RedLockNet.SERedis
 				StopKeepAliveTimer();
 			}
 
+			unlockCancellationTokenSource.Cancel();
 			await UnlockAsync().ConfigureAwait(false);
 
 			Status = RedLockStatus.Unlocked;
