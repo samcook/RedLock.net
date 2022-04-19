@@ -167,7 +167,7 @@ namespace RedLockNet.SERedis
 				{
 					var server = cache.ConnectionMultiplexer.GetServer(endPoint);
 
-					endPointStatuses.Add(endPoint, new RedLockConfigurationChangedEventArgs.RedLockEndPointStatus(endPoint, server.IsConnected, server.IsSlave));
+					endPointStatuses.Add(endPoint, new RedLockConfigurationChangedEventArgs.RedLockEndPointStatus(endPoint, server.IsConnected, server.IsReplica));
 				}
 
 				connections.Add(endPointStatuses);
