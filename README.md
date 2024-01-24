@@ -70,9 +70,9 @@ await using (var redLock = await redlockFactory.CreateLockAsync(resource, expiry
 ### When you want to lock on a resource (blocking and retrying every `retry` seconds until the lock is available, or `wait` seconds have passed):
 ```csharp
 var resource = "the-thing-we-are-locking-on";
-var expiry = TimeSpan.FromSeconds(30);
-var wait = TimeSpan.FromSeconds(10);
-var retry = TimeSpan.FromSeconds(1);
+var expiry = TimeSpan.FromSeconds(30); // The expiry time passed to the redis command
+var wait = TimeSpan.FromSeconds(10); // Waiting time to acquire lock
+var retry = TimeSpan.FromSeconds(1); // Waiting time before retrying to acquire lock
 
 // blocks until acquired or 'wait' timeout
 await using (var redLock = await redlockFactory.CreateLockAsync(resource, expiry, wait, retry)) // there are also non async Create() methods
